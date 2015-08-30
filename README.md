@@ -1,4 +1,4 @@
-# Prooph Event Store <-> Service Bus Bridge
+# Prooph Event Store <-> Service Bus
 
 Marry CQRS with Event Sourcing
 
