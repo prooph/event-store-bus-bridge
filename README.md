@@ -9,14 +9,24 @@ Marry CQRS with Event Sourcing
 This package acts as a clue component between [prooph/service-bus](https://github.com/prooph/service-bus) and [prooph/event-store](https://github.com/prooph/event-store).
 
 ## Features
-- Transaction handling based on command dispatch
-- Event publishing after event store commit
+- [Transaction handling](docs/transaction_manager.md) based on command dispatch
+- [Event publishing](event_publisher.md) after event store commit
 
-## Set up
-tbd
+# Support
 
-## Transaction Handling
-tbd
+- Ask questions on [prooph-users](https://groups.google.com/forum/?hl=de#!forum/prooph) mailing list.
+- File issues at [https://github.com/prooph/event-store-bus-bridge/issues](https://github.com/prooph/event-store-bus-bridge/issues).
+- Say hello in the [prooph gitter](https://gitter.im/prooph/improoph) chat.
 
-## Event Publishing
-tbd
+# Contribute
+
+Please feel free to fork and extend existing or add new plugins and send a pull request with your changes!
+To establish a consistent code quality, please provide unit tests for all your changes and may adapt the documentation.
+
+# Dependencies
+
+Please refer to the project [composer.json](composer.json) for the list of dependencies.
+
+# License
+
+Released under the [New BSD License](LICENSE).
