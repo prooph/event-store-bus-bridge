@@ -1,6 +1,6 @@
 {
-    "name": "prooph/transaction",
-    "description": "CQRS + ES Transaction handling",
+    "name": "prooph/event-store-bus-bridge",
+    "description": "Marry CQRS with Event Sourcing",
     "type": "library",
     "license": "BSD-3-Clause",
     "homepage": "https://github.com/prooph/transaction/",
@@ -16,7 +16,6 @@
         }
     ],
     "keywords": [
-        "php",
         "CQRS",
         "EventSourcing",
         "prooph"
