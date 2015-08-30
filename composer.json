@@ -32,12 +32,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Prooph\\Transaction\\": "src/"
+            "Prooph\\EventStoreBusBridge\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ProophTest\\Transaction\\": "tests/"
+            "ProophTest\\EventStoreBusBridge\\": "tests/"
         }
     }
 }
