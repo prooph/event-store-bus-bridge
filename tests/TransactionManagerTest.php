@@ -268,8 +268,6 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         //Step 1: Create null command
         $command = null;
 
-        $causationId = Uuid::uuid4();
-
         $initializeActionEvent = $this->prophesize(ActionEvent::class);
 
         $initializeActionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE)->willReturn($command);
@@ -283,9 +281,8 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $transactionManager->onInitialize($initializeActionEvent->reveal());
 
         $recordedEvent = $this->prophesize(Message::class);
-        $recordedEventCopy1 = $this->prophesize(Message::class);
 
-        $recordedEvent->withAddedMetadata('causation_id', $causationId->toString())->willReturn($recordedEventCopy1->reveal());
+        $recordedEvent->withAddedMetadata('causation_id', Argument::any())->shouldNotBeCalled();
 
         $stream = new Stream(new StreamName('event_stream'), [$recordedEvent->reveal()]);
 
