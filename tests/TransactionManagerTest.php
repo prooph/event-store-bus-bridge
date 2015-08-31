@@ -12,6 +12,7 @@ namespace ProophTest\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
+use Prooph\Common\Event\DefaultActionEvent;
 use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
@@ -241,6 +242,56 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(is_array($enrichedEvents));
         $this->assertEquals(1, count($enrichedEvents));
         $this->assertSame($recordedEventCopy2->reveal(), $enrichedEvents[0]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_returns_early_on_event_store_create_stream_if_event_has_no_stream()
+    {
+        $createStreamActionEvent = $this->prophesize(ActionEvent::class);
+
+        $createStreamActionEvent->getParam('stream')->willReturn(false);
+
+        $eventStoreMock = $this->getEventStoreObjectProphecy();
+
+        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+
+        $this->assertNull($transactionManager->onEventStoreCreateStream($createStreamActionEvent->reveal()));
+    }
+
+    /**
+     * @test
+     */
+    public function it_returns_early_if_command_was_null_when_handling_events()
+    {
+        //Step 1: Create null command
+        $command = null;
+
+        $initializeActionEvent = $this->prophesize(ActionEvent::class);
+
+        $initializeActionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE)->willReturn($command);
+
+        $eventStoreMock = $this->getEventStoreObjectProphecy();
+
+        $eventStoreMock->beginTransaction()->shouldBeCalled();
+
+        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+
+        $transactionManager->onInitialize($initializeActionEvent->reveal());
+
+        $recordedEvent = $this->prophesize(Message::class);
+
+        $recordedEvent->withAddedMetadata('causation_id', Argument::any())->shouldNotBeCalled();
+
+        $stream = new Stream(new StreamName('event_stream'), [$recordedEvent->reveal()]);
+
+        $createStreamActionEvent = new DefaultActionEvent('test');
+        $createStreamActionEvent->setParam('stream', $stream);
+
+        $transactionManager->onEventStoreCreateStream($createStreamActionEvent);
+
+        $this->assertEquals($stream, $createStreamActionEvent->getParam('stream'));
     }
 
     /**
