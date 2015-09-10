@@ -10,7 +10,7 @@ This package acts as a glue component between [prooph/service-bus](https://githu
 
 ## Features
 - [Transaction handling](docs/transaction_manager.md) based on command dispatch
-- [Event publishing](event_publisher.md) after event store commit
+- [Event publishing](docs/event_publisher.md) after event store commit
 
 # Support
 
