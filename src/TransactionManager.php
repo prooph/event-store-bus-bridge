@@ -118,10 +118,12 @@ final class TransactionManager implements ActionEventListenerAggregate
      */
     public function onFinalize(ActionEvent $actionEvent)
     {
-        if ($actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
-            $this->eventStore->rollback();
-        } else {
-            $this->eventStore->commit();
+        if ($this->eventStore->isInTransaction()) {
+            if ($actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
+                $this->eventStore->rollback();
+            } else {
+                $this->eventStore->commit();
+            }
         }
 
         $this->currentCommand = null;

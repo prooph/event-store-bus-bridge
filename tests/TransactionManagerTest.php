@@ -103,6 +103,8 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
+        $eventStoreMock->isInTransaction()->willReturn(true);
+
         $eventStoreMock->commit()->shouldBeCalled();
 
         $transactionManager = new TransactionManager($eventStoreMock->reveal());
@@ -121,7 +123,31 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
+        $eventStoreMock->isInTransaction()->willReturn(true);
+
         $eventStoreMock->rollback()->shouldBeCalled();
+
+        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+
+        $actionEvent = $this->prophesize(ActionEvent::class);
+
+        $exception = $this->prophesize(\Exception::class);
+
+        $actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)->willReturn($exception->reveal());
+
+        $transactionManager->onFinalize($actionEvent->reveal());
+    }
+
+    /**
+     * @test
+     */
+    public function it_does_not_perform_rollback_after_transaction_commit()
+    {
+        $eventStoreMock = $this->getEventStoreObjectProphecy();
+
+        $eventStoreMock->isInTransaction()->willReturn(false);
+
+        $eventStoreMock->rollback()->shouldNotBeCalled();
 
         $transactionManager = new TransactionManager($eventStoreMock->reveal());
 
