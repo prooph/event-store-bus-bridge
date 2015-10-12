@@ -196,7 +196,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $recordedEventCopy1->withAddedMetadata('causation_name', 'causation-message-name')->willReturn($recordedEventCopy2->reveal());
         $recordedEvent->withAddedMetadata('causation_id', $causationId->toString())->willReturn($recordedEventCopy1->reveal());
 
-        $stream = new Stream(new StreamName('event_stream'), [$recordedEvent->reveal()]);
+        $stream = new Stream(new StreamName('event_stream'), new \ArrayIterator([$recordedEvent->reveal()]));
 
         $createStreamActionEvent = $this->prophesize(ActionEvent::class);
 
@@ -254,7 +254,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $appendToStreamActionEvent = $this->prophesize(ActionEvent::class);
 
-        $appendToStreamActionEvent->getParam('streamEvents')->willReturn([$recordedEvent->reveal()]);
+        $appendToStreamActionEvent->getParam('streamEvents')->willReturn(new \ArrayIterator([$recordedEvent->reveal()]));
 
         $enrichedEvents = null;
         $appendToStreamActionEvent->setParam('streamEvents', Argument::any())
@@ -265,7 +265,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $transactionManager->onEventStoreAppendToStream($appendToStreamActionEvent->reveal());
 
         $this->assertNotNull($enrichedEvents);
-        $this->assertTrue(is_array($enrichedEvents));
+        $this->assertInstanceOf(\ArrayIterator::class, $enrichedEvents);
         $this->assertEquals(1, count($enrichedEvents));
         $this->assertSame($recordedEventCopy2->reveal(), $enrichedEvents[0]);
     }
@@ -310,7 +310,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $recordedEvent->withAddedMetadata('causation_id', Argument::any())->shouldNotBeCalled();
 
-        $stream = new Stream(new StreamName('event_stream'), [$recordedEvent->reveal()]);
+        $stream = new Stream(new StreamName('event_stream'), new \ArrayIterator([$recordedEvent->reveal()]));
 
         $createStreamActionEvent = new DefaultActionEvent('test');
         $createStreamActionEvent->setParam('stream', $stream);

@@ -10,6 +10,8 @@
  */
 namespace Prooph\EventStoreBusBridge;
 
+use Iterator;
+use ArrayIterator;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ActionEventListenerAggregate;
@@ -74,10 +76,10 @@ final class TransactionManager implements ActionEventListenerAggregate
      * adds the causation_id (command UUID) and causation_name (name of the command which has caused the events)
      * as metadata to each event.
      *
-     * @param Message[] $recordedEvents
+     * @param Iterator $recordedEvents
      * @return Message[]
      */
-    private function handleRecordedEvents(array $recordedEvents)
+    private function handleRecordedEvents(Iterator $recordedEvents)
     {
         if (is_null($this->currentCommand) || ! $this->currentCommand instanceof Message) {
             return $recordedEvents;
@@ -95,7 +97,7 @@ final class TransactionManager implements ActionEventListenerAggregate
             $enrichedRecordedEvents[] = $recordedEvent;
         }
 
-        return $enrichedRecordedEvents;
+        return new ArrayIterator($enrichedRecordedEvents);
     }
 
     /**
