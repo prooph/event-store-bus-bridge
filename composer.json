@@ -22,7 +22,7 @@
     ],
     "require": {
         "php": ">=5.5",
-        "prooph/event-store" : "^5.1",
+        "prooph/event-store" : "dev-develop",
         "prooph/service-bus" : "^4.0"
     },
     "require-dev": {
