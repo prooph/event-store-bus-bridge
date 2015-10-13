@@ -77,7 +77,7 @@ final class TransactionManager implements ActionEventListenerAggregate
      * as metadata to each event.
      *
      * @param Iterator $recordedEvents
-     * @return Message[]
+     * @return Iterator
      */
     private function handleRecordedEvents(Iterator $recordedEvents)
     {
