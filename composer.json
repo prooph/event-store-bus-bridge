@@ -26,6 +26,7 @@
         "prooph/service-bus" : "^4.0"
     },
     "require-dev": {
+        "container-interop/container-interop": "^1.1",
         "phpunit/phpunit": "~4.8",
         "fabpot/php-cs-fixer": "1.7.*",
         "satooshi/php-coveralls": "dev-master"
