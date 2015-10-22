@@ -11,6 +11,7 @@
 namespace Prooph\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\TransactionManager;
 
 /**
@@ -22,7 +23,7 @@ final class TransactionManagerFactory
 {
     public function __invoke(ContainerInterface $container)
     {
-        $eventStore = $container->get('prooph.event_store');
+        $eventStore = $container->get(EventStore::class);
         return new TransactionManager($eventStore);
     }
 }
