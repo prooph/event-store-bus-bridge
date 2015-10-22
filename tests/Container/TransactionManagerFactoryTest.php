@@ -35,7 +35,7 @@ final class TransactionManagerFactoryTest extends \PHPUnit_Framework_TestCase
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->get('prooph.event_store')->willReturn($eventStore->reveal());
+        $container->get(EventStore::class)->willReturn($eventStore->reveal());
 
         $factory = new TransactionManagerFactory();
 
