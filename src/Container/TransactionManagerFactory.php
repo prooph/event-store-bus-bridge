@@ -11,7 +11,6 @@
 namespace Prooph\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 

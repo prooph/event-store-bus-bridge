@@ -11,8 +11,6 @@
 namespace ProophTest\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
-use Prooph\Common\Event\ActionEventEmitter;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\Container\TransactionManagerFactory;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
