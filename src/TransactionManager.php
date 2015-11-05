@@ -19,6 +19,7 @@ use Prooph\Common\Event\DetachAggregateHandlers;
 use Prooph\Common\Messaging\Command;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\Stream\Stream;
 use Prooph\ServiceBus\CommandBus;
 
@@ -32,7 +33,7 @@ use Prooph\ServiceBus\CommandBus;
  *
  * @package Prooph\EventStoreBusBridge
  */
-final class TransactionManager implements ActionEventListenerAggregate
+final class TransactionManager implements Plugin, ActionEventListenerAggregate
 {
     use DetachAggregateHandlers;
 
@@ -48,8 +49,9 @@ final class TransactionManager implements ActionEventListenerAggregate
 
     /**
      * @param EventStore $eventStore
+     * @return void
      */
-    public function __construct(EventStore $eventStore)
+    public function setUp(EventStore $eventStore)
     {
         $this->eventStore = $eventStore;
         $this->eventStore->getActionEventEmitter()->attachListener('create.pre', [$this, 'onEventStoreCreateStream'], -1000);

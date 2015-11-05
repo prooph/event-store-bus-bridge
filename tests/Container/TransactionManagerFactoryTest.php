@@ -15,6 +15,8 @@ use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\Container\TransactionManagerFactory;
 use Prooph\EventStoreBusBridge\TransactionManager;
+use Prooph\ServiceBus\CommandBus;
+use Prophecy\Argument;
 
 /**
  * Class TransactionManagerFactoryTest
@@ -28,14 +30,13 @@ final class TransactionManagerFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function it_creates_a_transaction_manager()
     {
-        $actionEventEmitter = $this->prophesize(ActionEventEmitter::class);
-        $eventStore = $this->prophesize(EventStore::class);
+        $commandBus = $this->prophesize(CommandBus::class);
 
-        $eventStore->getActionEventEmitter()->willReturn($actionEventEmitter->reveal());
+        $commandBus->utilize(Argument::type(TransactionManager::class))->shouldBeCalled();
 
         $container = $this->prophesize(ContainerInterface::class);
 
-        $container->get(EventStore::class)->willReturn($eventStore->reveal());
+        $container->get(CommandBus::class)->willReturn($commandBus->reveal());
 
         $factory = new TransactionManagerFactory();
 

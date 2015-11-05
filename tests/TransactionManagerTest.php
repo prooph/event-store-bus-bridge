@@ -55,7 +55,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->getActionEventEmitter()->willReturn($emitter->reveal());
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $this->assertEquals([$transactionManager, 'onEventStoreCreateStream'], $createStreamListener);
         $this->assertEquals([$transactionManager, 'onEventStoreAppendToStream'], $appendToStreamListener);
@@ -66,7 +68,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
      */
     public function it_attaches_itself_to_command_bus_initialize_and_finalize_events()
     {
-        $transactionManager = new TransactionManager($this->getEventStoreObjectProphecy()->reveal());
+        $transactionManager = new TransactionManager();
 
         $commandBusEmitter = $this->prophesize(ActionEventEmitter::class);
 
@@ -87,7 +89,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -107,7 +111,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->commit()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -127,7 +133,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->rollback()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -149,7 +157,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->rollback()->shouldNotBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -181,7 +191,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         //Now the command is set as currentCommand internally and later used when new stream is going to be created
         $transactionManager->onInitialize($initializeActionEvent->reveal());
@@ -237,7 +249,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         //Now the command is set as currentCommand internally and later used when new stream is going to be created
         $transactionManager->onInitialize($initializeActionEvent->reveal());
@@ -281,7 +295,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $this->assertNull($transactionManager->onEventStoreCreateStream($createStreamActionEvent->reveal()));
     }
@@ -302,7 +318,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $transactionManager->onInitialize($initializeActionEvent->reveal());
 
