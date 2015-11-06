@@ -72,7 +72,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $commandBusEmitter = $this->prophesize(ActionEventEmitter::class);
 
-        $commandBusEmitter->attachListener(CommandBus::EVENT_INITIALIZE, [$transactionManager, 'onInitialize'], -1000)
+        $commandBusEmitter->attachListener(CommandBus::EVENT_INVOKE_HANDLER, [$transactionManager, 'onInvokeHandler'], 1000)
             ->willReturn($this->prophesize(ListenerHandler::class)->reveal());
         $commandBusEmitter->attachListener(CommandBus::EVENT_FINALIZE, [$transactionManager, 'onFinalize'], 1000)
             ->willReturn($this->prophesize(ListenerHandler::class)->reveal());
@@ -97,7 +97,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $actionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE)->willReturn("a message");
 
-        $transactionManager->onInitialize($actionEvent->reveal());
+        $transactionManager->onInvokeHandler($actionEvent->reveal());
     }
 
     /**
@@ -196,7 +196,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $transactionManager->setUp($eventStoreMock->reveal());
 
         //Now the command is set as currentCommand internally and later used when new stream is going to be created
-        $transactionManager->onInitialize($initializeActionEvent->reveal());
+        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
 
         //Step 2: Prepare a new stream which is going to be created.
         //        The TransactionManager should respect immutability
@@ -254,7 +254,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $transactionManager->setUp($eventStoreMock->reveal());
 
         //Now the command is set as currentCommand internally and later used when new stream is going to be created
-        $transactionManager->onInitialize($initializeActionEvent->reveal());
+        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
 
         //Step 2: Prepare a new stream which is going to be created.
         //        The TransactionManager should respect immutability
@@ -322,7 +322,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $transactionManager->setUp($eventStoreMock->reveal());
 
-        $transactionManager->onInitialize($initializeActionEvent->reveal());
+        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
 
         $recordedEvent = $this->prophesize(Message::class);
 

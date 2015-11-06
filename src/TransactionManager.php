@@ -67,8 +67,8 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
      */
     public function attach(ActionEventEmitter $emitter)
     {
-        //Attach with a low priority, so that a potential message translator has done its job already
-        $this->trackHandler($emitter->attachListener(CommandBus::EVENT_INITIALIZE, [$this, 'onInitialize'], -1000));
+        //Attach with a high priority, so that it invokes before the handler is invoked
+        $this->trackHandler($emitter->attachListener(CommandBus::EVENT_INVOKE_HANDLER, [$this, 'onInvokeHandler'], 1000));
         //Attach with a high priority to rollback transaction early in case of an error
         $this->trackHandler($emitter->attachListener(CommandBus::EVENT_FINALIZE, [$this, 'onFinalize'], 1000));
     }
@@ -103,11 +103,11 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
     }
 
     /**
-     * Begin event store transaction on command dispatch initialize
+     * Begin event store transaction before command gets handled
      *
      * @param ActionEvent $actionEvent
      */
-    public function onInitialize(ActionEvent $actionEvent)
+    public function onInvokeHandler(ActionEvent $actionEvent)
     {
         $this->currentCommand = $actionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE);
 
