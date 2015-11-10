@@ -1,0 +1,10 @@
+{
+  "title": "Marry CQRS with Event Sourcing",
+  "content": [
+    {"intro": "../README.md"},
+    {"event_publisher": "event_publisher.md"},
+    {"transaction_manager": "transaction_manager.md"}
+  ],
+  "target": "./html",
+  "template": "../vendor/tobiju/bookdown-bootswatch-templates/templates/cerulean/main.php"
+}
