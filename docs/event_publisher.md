@@ -1,6 +1,6 @@
 # Event Publishing
 
-The [EventPublisher](src/EventPublisher.php) is an event store plugin which listens on the event store `commit.post` action event.
+The `Prooph\EventStoreBusBridge\EventPublisher` is an event store plugin which listens on the event store `commit.post` action event.
 It iterates over the `recordedEvents` and publishes each on the `Prooph\ServiceBus\EventBus`.
 
 ## Set Up
@@ -14,11 +14,10 @@ an event store transaction is committed.
 
 If you are using the `container-aware factory` shipped with prooph/event-store you may also
 want to auto register the `EventPublisher`. First you need to make the event publisher available as a service in the
-container. You can use the [EventPublisherFactory](src/Container/EventPublisherFactory.php) for that.
+container. You can use the `Prooph\EventStoreBusBridge\Container\EventPublisherFactory` for that.
 
 *Note: The event bus should be available as service `Prooph\ServiceBus\EventBus` in the container. But if your event bus is
 registered with another service name you can extend the factory and override the protected method `getEventBusServiceName`.*
 
 Map the factory to a service name like `prooph.event_publisher` and add this service name to the list of event store plugins
-in your application configuration. Please refer to the [event store docs](https://github.com/prooph/event-store/blob/master/docs/event_store.md#container-driven-creation)
-for more details about plugin configuration.
+in your application configuration. Also have a look at the event store docs for more details about the plugin system.

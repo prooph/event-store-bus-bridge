@@ -1,7 +1,7 @@
 # Transaction Handling
 
 ## Set Up
-To enable transaction handling based on command dispatch you need to set up the [TransactionManager](src/TransactionManager.php).
+To enable transaction handling based on command dispatch you need to set up the `Prooph\EventStoreBusBridge\TransactionManager`.
 The transaction manager acts as command bus AND event store plugin so you need to attach it to both:
 
 ```php
@@ -17,9 +17,8 @@ That's it!
 ### Container-Driven Set Up
 If you are using the `container-aware factories` shipped with prooph/service-bus you may also
 want to auto register the `TransactionManager`. As long as the command bus is available as service `Prooph\ServiceBus\CommandBus` in the container you can use
-the [TransactionManagerFactory](src/Container/TransactionManagerFactory.php) for that. Just map the factory to a service name like `prooph.transaction_manager` and
-add the service name to the plugin list of the event store configuration. Please refer to [prooph/event-store docs](https://github.com/prooph/event-store/blob/master/docs/interop_factories.md#event-store-factory)
-for more details.
+the `Prooph\EventStoreBusBridge\Container\TransactionManagerFactory` for that. Just map the factory to a service name like `prooph.transaction_manager` and
+add the service name to the plugin list of the event store configuration. Also have a look at the event store docs for more details about the plugin system.
 
 ## Features
 
