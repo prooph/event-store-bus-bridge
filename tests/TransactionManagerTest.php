@@ -55,7 +55,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->getActionEventEmitter()->willReturn($emitter->reveal());
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $this->assertEquals([$transactionManager, 'onEventStoreCreateStream'], $createStreamListener);
         $this->assertEquals([$transactionManager, 'onEventStoreAppendToStream'], $appendToStreamListener);
@@ -66,11 +68,11 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
      */
     public function it_attaches_itself_to_command_bus_initialize_and_finalize_events()
     {
-        $transactionManager = new TransactionManager($this->getEventStoreObjectProphecy()->reveal());
+        $transactionManager = new TransactionManager();
 
         $commandBusEmitter = $this->prophesize(ActionEventEmitter::class);
 
-        $commandBusEmitter->attachListener(CommandBus::EVENT_INITIALIZE, [$transactionManager, 'onInitialize'], -1000)
+        $commandBusEmitter->attachListener(CommandBus::EVENT_INVOKE_HANDLER, [$transactionManager, 'onInvokeHandler'], 1000)
             ->willReturn($this->prophesize(ListenerHandler::class)->reveal());
         $commandBusEmitter->attachListener(CommandBus::EVENT_FINALIZE, [$transactionManager, 'onFinalize'], 1000)
             ->willReturn($this->prophesize(ListenerHandler::class)->reveal());
@@ -87,13 +89,15 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
         $actionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE)->willReturn("a message");
 
-        $transactionManager->onInitialize($actionEvent->reveal());
+        $transactionManager->onInvokeHandler($actionEvent->reveal());
     }
 
     /**
@@ -107,7 +111,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->commit()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -127,7 +133,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->rollback()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -149,7 +157,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->rollback()->shouldNotBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $actionEvent = $this->prophesize(ActionEvent::class);
 
@@ -181,10 +191,12 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         //Now the command is set as currentCommand internally and later used when new stream is going to be created
-        $transactionManager->onInitialize($initializeActionEvent->reveal());
+        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
 
         //Step 2: Prepare a new stream which is going to be created.
         //        The TransactionManager should respect immutability
@@ -196,7 +208,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $recordedEventCopy1->withAddedMetadata('causation_name', 'causation-message-name')->willReturn($recordedEventCopy2->reveal());
         $recordedEvent->withAddedMetadata('causation_id', $causationId->toString())->willReturn($recordedEventCopy1->reveal());
 
-        $stream = new Stream(new StreamName('event_stream'), [$recordedEvent->reveal()]);
+        $stream = new Stream(new StreamName('event_stream'), new \ArrayIterator([$recordedEvent->reveal()]));
 
         $createStreamActionEvent = $this->prophesize(ActionEvent::class);
 
@@ -237,10 +249,12 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         //Now the command is set as currentCommand internally and later used when new stream is going to be created
-        $transactionManager->onInitialize($initializeActionEvent->reveal());
+        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
 
         //Step 2: Prepare a new stream which is going to be created.
         //        The TransactionManager should respect immutability
@@ -254,7 +268,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $appendToStreamActionEvent = $this->prophesize(ActionEvent::class);
 
-        $appendToStreamActionEvent->getParam('streamEvents')->willReturn([$recordedEvent->reveal()]);
+        $appendToStreamActionEvent->getParam('streamEvents')->willReturn(new \ArrayIterator([$recordedEvent->reveal()]));
 
         $enrichedEvents = null;
         $appendToStreamActionEvent->setParam('streamEvents', Argument::any())
@@ -265,7 +279,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $transactionManager->onEventStoreAppendToStream($appendToStreamActionEvent->reveal());
 
         $this->assertNotNull($enrichedEvents);
-        $this->assertTrue(is_array($enrichedEvents));
+        $this->assertInstanceOf(\ArrayIterator::class, $enrichedEvents);
         $this->assertEquals(1, count($enrichedEvents));
         $this->assertSame($recordedEventCopy2->reveal(), $enrichedEvents[0]);
     }
@@ -281,7 +295,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
+
+        $transactionManager->setUp($eventStoreMock->reveal());
 
         $this->assertNull($transactionManager->onEventStoreCreateStream($createStreamActionEvent->reveal()));
     }
@@ -302,15 +318,17 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager($eventStoreMock->reveal());
+        $transactionManager = new TransactionManager();
 
-        $transactionManager->onInitialize($initializeActionEvent->reveal());
+        $transactionManager->setUp($eventStoreMock->reveal());
+
+        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
 
         $recordedEvent = $this->prophesize(Message::class);
 
         $recordedEvent->withAddedMetadata('causation_id', Argument::any())->shouldNotBeCalled();
 
-        $stream = new Stream(new StreamName('event_stream'), [$recordedEvent->reveal()]);
+        $stream = new Stream(new StreamName('event_stream'), new \ArrayIterator([$recordedEvent->reveal()]));
 
         $createStreamActionEvent = new DefaultActionEvent('test');
         $createStreamActionEvent->setParam('stream', $stream);

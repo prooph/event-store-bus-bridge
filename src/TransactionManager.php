@@ -10,6 +10,8 @@
  */
 namespace Prooph\EventStoreBusBridge;
 
+use Iterator;
+use ArrayIterator;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ActionEventListenerAggregate;
@@ -17,6 +19,7 @@ use Prooph\Common\Event\DetachAggregateHandlers;
 use Prooph\Common\Messaging\Command;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\Stream\Stream;
 use Prooph\ServiceBus\CommandBus;
 
@@ -30,7 +33,7 @@ use Prooph\ServiceBus\CommandBus;
  *
  * @package Prooph\EventStoreBusBridge
  */
-final class TransactionManager implements ActionEventListenerAggregate
+final class TransactionManager implements Plugin, ActionEventListenerAggregate
 {
     use DetachAggregateHandlers;
 
@@ -46,8 +49,9 @@ final class TransactionManager implements ActionEventListenerAggregate
 
     /**
      * @param EventStore $eventStore
+     * @return void
      */
-    public function __construct(EventStore $eventStore)
+    public function setUp(EventStore $eventStore)
     {
         $this->eventStore = $eventStore;
         $this->eventStore->getActionEventEmitter()->attachListener('create.pre', [$this, 'onEventStoreCreateStream'], -1000);
@@ -63,8 +67,8 @@ final class TransactionManager implements ActionEventListenerAggregate
      */
     public function attach(ActionEventEmitter $emitter)
     {
-        //Attach with a low priority, so that a potential message translator has done its job already
-        $this->trackHandler($emitter->attachListener(CommandBus::EVENT_INITIALIZE, [$this, 'onInitialize'], -1000));
+        //Attach with a high priority, so that it invokes before the handler is invoked
+        $this->trackHandler($emitter->attachListener(CommandBus::EVENT_INVOKE_HANDLER, [$this, 'onInvokeHandler'], 1000));
         //Attach with a high priority to rollback transaction early in case of an error
         $this->trackHandler($emitter->attachListener(CommandBus::EVENT_FINALIZE, [$this, 'onFinalize'], 1000));
     }
@@ -74,10 +78,10 @@ final class TransactionManager implements ActionEventListenerAggregate
      * adds the causation_id (command UUID) and causation_name (name of the command which has caused the events)
      * as metadata to each event.
      *
-     * @param Message[] $recordedEvents
-     * @return Message[]
+     * @param Iterator $recordedEvents
+     * @return Iterator
      */
-    private function handleRecordedEvents(array $recordedEvents)
+    private function handleRecordedEvents(Iterator $recordedEvents)
     {
         if (is_null($this->currentCommand) || ! $this->currentCommand instanceof Message) {
             return $recordedEvents;
@@ -95,15 +99,15 @@ final class TransactionManager implements ActionEventListenerAggregate
             $enrichedRecordedEvents[] = $recordedEvent;
         }
 
-        return $enrichedRecordedEvents;
+        return new ArrayIterator($enrichedRecordedEvents);
     }
 
     /**
-     * Begin event store transaction on command dispatch initialize
+     * Begin event store transaction before command gets handled
      *
      * @param ActionEvent $actionEvent
      */
-    public function onInitialize(ActionEvent $actionEvent)
+    public function onInvokeHandler(ActionEvent $actionEvent)
     {
         $this->currentCommand = $actionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE);
 
