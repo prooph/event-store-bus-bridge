@@ -60,7 +60,7 @@ final class EventPublisherTest extends \PHPUnit_Framework_TestCase
 
         $commitPostEvent = $this->prophesize(ActionEvent::class);
 
-        $commitPostEvent->getParam('recordedEvents', [])->willReturn([$event1->reveal(), $event2->reveal()]);
+        $commitPostEvent->getParam('recordedEvents', new \ArrayIterator())->willReturn([$event1->reveal(), $event2->reveal()]);
 
         $eventPublisher->onEventStoreCommitPost($commitPostEvent->reveal());
     }
