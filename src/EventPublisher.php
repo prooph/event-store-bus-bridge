@@ -54,7 +54,7 @@ final class EventPublisher implements Plugin
      */
     public function onEventStoreCommitPost(ActionEvent $actionEvent)
     {
-        $recordedEvents = $actionEvent->getParam('recordedEvents', []);
+        $recordedEvents = $actionEvent->getParam('recordedEvents', new \ArrayIterator());
 
         foreach ($recordedEvents as $recordedEvent) {
             $this->eventBus->dispatch($recordedEvent);
