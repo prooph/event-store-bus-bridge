@@ -47,13 +47,13 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $appendToStreamListener = null;
 
         $emitter->attachListener('create.pre', Argument::any(), -1000)->will(
-            $function = function ($args) use (&$createStreamListener, &$function) {
+            $function = function ($args) use (&$createStreamListener, &$function): ListenerHandler {
                 $createStreamListener = $args[1];
                 return new DefaultListenerHandler($function);
             }
         );
         $emitter->attachListener('appendTo.pre', Argument::any(), -1000)->will(
-            $function = function ($args) use (&$appendToStreamListener, &$function) {
+            $function = function ($args) use (&$appendToStreamListener, &$function): ListenerHandler {
                 $appendToStreamListener = $args[1];
                 return new DefaultListenerHandler($function);
             }
