@@ -15,7 +15,6 @@ namespace ProophTest\EventStoreBusBridge;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\DefaultActionEvent;
-use Prooph\Common\Event\DefaultListenerHandler;
 use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
@@ -47,15 +46,13 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $appendToStreamListener = null;
 
         $emitter->attachListener('create.pre', Argument::any(), -1000)->will(
-            $function = function ($args) use (&$createStreamListener, &$function): ListenerHandler {
+            function ($args) use (&$createStreamListener): void {
                 $createStreamListener = $args[1];
-                return new DefaultListenerHandler($function);
             }
         );
         $emitter->attachListener('appendTo.pre', Argument::any(), -1000)->will(
-            $function = function ($args) use (&$appendToStreamListener, &$function): ListenerHandler {
+            function ($args) use (&$appendToStreamListener): void {
                 $appendToStreamListener = $args[1];
-                return new DefaultListenerHandler($function);
             }
         );
 
