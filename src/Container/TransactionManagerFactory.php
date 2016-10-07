@@ -51,7 +51,7 @@ final class TransactionManagerFactory
     {
         $this->commandBusServiceName = $commandBusServiceName;
     }
-    
+
     public function __invoke(ContainerInterface $container): TransactionManager
     {
         $commandBus = $container->get($this->commandBusServiceName);
