@@ -15,6 +15,7 @@ namespace ProophTest\EventStoreBusBridge;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\DefaultActionEvent;
+use Prooph\Common\Event\DefaultListenerHandler;
 use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
@@ -46,13 +47,15 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $appendToStreamListener = null;
 
         $emitter->attachListener('create.pre', Argument::any(), -1000)->will(
-            function ($args) use (&$createStreamListener) {
+            $function = function ($args) use (&$createStreamListener, &$function) {
                 $createStreamListener = $args[1];
+                return new DefaultListenerHandler($function);
             }
         );
         $emitter->attachListener('appendTo.pre', Argument::any(), -1000)->will(
-            function ($args) use (&$appendToStreamListener) {
+            $function = function ($args) use (&$appendToStreamListener, &$function) {
                 $appendToStreamListener = $args[1];
+                return new DefaultListenerHandler($function);
             }
         );
 
@@ -343,7 +346,10 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
     private function getEventStoreObjectProphecy(): ObjectProphecy
     {
+        $listenerHandler = $this->prophesize(ListenerHandler::class);
+
         $actionEventEmitter = $this->prophesize(ActionEventEmitter::class);
+        $actionEventEmitter->attachListener(Argument::any(), Argument::any(), Argument::any())->willReturn($listenerHandler->reveal());
 
         $eventStoreMock = $this->prophesize(EventStore::class);
 
