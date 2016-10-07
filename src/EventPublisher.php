@@ -32,29 +32,17 @@ final class EventPublisher implements Plugin
      */
     private $eventBus;
 
-    /**
-     * @param \Prooph\ServiceBus\EventBus $eventBus
-     */
     public function __construct(EventBus $eventBus)
     {
         $this->eventBus = $eventBus;
     }
 
-    /**
-     * @param EventStore $eventStore
-     * @return void
-     */
-    public function setUp(EventStore $eventStore)
+    public function setUp(EventStore $eventStore): void
     {
         $eventStore->getActionEventEmitter()->attachListener('commit.post', [$this, 'onEventStoreCommitPost']);
     }
 
-    /**
-     * Publish recorded events on the event bus
-     *
-     * @param ActionEvent $actionEvent
-     */
-    public function onEventStoreCommitPost(ActionEvent $actionEvent)
+    public function onEventStoreCommitPost(ActionEvent $actionEvent): void
     {
         $recordedEvents = $actionEvent->getParam('recordedEvents', new \ArrayIterator());
 

@@ -27,7 +27,7 @@ final class EventPublisherFactoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_creates_an_event_publisher_using_the_default_service_name_for_getting_an_event_bus()
+    public function it_creates_an_event_publisher_using_the_default_service_name_for_getting_an_event_bus(): void
     {
         $eventBus = $this->prophesize(EventBus::class);
 

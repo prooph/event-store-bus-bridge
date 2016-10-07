@@ -28,7 +28,7 @@ final class TransactionManagerFactoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_creates_a_transaction_manager()
+    public function it_creates_a_transaction_manager(): void
     {
         $commandBus = $this->prophesize(CommandBus::class);
 

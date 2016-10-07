@@ -16,33 +16,47 @@ use Interop\Container\ContainerInterface;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\ServiceBus\EventBus;
 
-/**
- * Class EventPublisherFactory
- *
- * @package Prooph\EventStoreBusBridge\Container
- */
-class EventPublisherFactory
+final class EventPublisherFactory
 {
     /**
-     * @param ContainerInterface $container
-     * @return EventPublisher
+     * @var string
      */
-    final public function __invoke(ContainerInterface $container)
-    {
-        $eventBus = $container->get($this->getEventBusServiceName());
-
-        return new EventPublisher($eventBus);
-    }
+    private $eventBusServiceName;
 
     /**
-     * Return service name of the event bus
+     * Creates a new instance from a specified config, specifically meant to be used as static factory.
      *
-     * Override this method if event bus is available with another service name in the container.
+     * In case you want to use another config key than provided by the factories, you can add the following factory to
+     * your config:
      *
-     * @return string
+     * <code>
+     * <?php
+     * return [
+     *     EventPublisher::class => [EventPublisherFactory::class, 'event_bus_service_name'],
+     * ];
+     * </code>
+     *
+     * @throws \InvalidArgumentException
      */
-    protected function getEventBusServiceName()
+    public static function __callStatic(string $name, array $arguments): EventPublisher
     {
-        return EventBus::class;
+        if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
+            throw new \InvalidArgumentException(
+                sprintf('The first argument must be of type %s', ContainerInterface::class)
+            );
+        }
+        return (new static($name))->__invoke($arguments[0]);
+    }
+
+    public function __construct(string $eventBusServiceName = EventBus::class)
+    {
+        $this->eventBusServiceName = $eventBusServiceName;
+    }
+
+    public function __invoke(ContainerInterface $container): EventPublisher
+    {
+        $eventBus = $container->get($this->eventBusServiceName);
+
+        return new EventPublisher($eventBus);
     }
 }

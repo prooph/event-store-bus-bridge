@@ -30,7 +30,7 @@ final class EventPublisherTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_publishes_all_recorded_events()
+    public function it_publishes_all_recorded_events(): void
     {
         $event1 = $this->prophesize(Message::class);
         $event2 = $this->prophesize(Message::class);
