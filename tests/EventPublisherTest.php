@@ -14,6 +14,8 @@ namespace ProophTest\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
+use Prooph\Common\Event\DefaultListenerHandler;
+use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\EventPublisher;
@@ -47,8 +49,9 @@ final class EventPublisherTest extends \PHPUnit_Framework_TestCase
         $commitPostListener = null;
 
         $actionEventEmitter->attachListener('commit.post', Argument::any())->will(
-            function ($args) use (&$commitPostListener): void {
+            $function = function ($args) use (&$commitPostListener, &$function): ListenerHandler {
                 $commitPostListener = $args[1];
+                return new DefaultListenerHandler($function);
             }
         );
 
