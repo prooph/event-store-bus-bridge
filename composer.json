@@ -21,16 +21,20 @@
         "prooph"
     ],
     "require": {
-        "php": "~5.5|~7.0",
-        "prooph/event-store" : "^6.0",
-        "prooph/service-bus" : "^5.0"
+        "php": "^7.1",
+        "prooph/common" : "dev-php_7_1 as 4.0.0",
+        "prooph/service-bus" : "dev-php_7_1 as 6.0.0",
+        "prooph/event-store" : "dev-php_7_1 as 7.0.0"
     },
     "require-dev": {
         "container-interop/container-interop": "^1.1",
-        "phpunit/phpunit": "~4.8",
-        "fabpot/php-cs-fixer": "1.7.*",
-        "satooshi/php-coveralls": "dev-master",
-        "tobiju/bookdown-bootswatch-templates": "^0.2.0"
+        "phpunit/phpunit": "^5.6",
+        "phpunit/phpunit-mock-objects": "^3.3.1",
+        "phpspec/prophecy": "dev-patch-1 as 1.6.1",
+        "friendsofphp/php-cs-fixer": "^1.12.2",
+        "satooshi/php-coveralls": "^1.0",
+        "tobiju/bookdown-bootswatch-templates": "^0.2.0",
+        "malukenho/docheader": "^0.1.4"
     },
     "autoload": {
         "psr-4": {
@@ -41,5 +45,11 @@
         "psr-4": {
             "ProophTest\\EventStoreBusBridge\\": "tests/"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/prolic/prophecy.git"
+        }
+    ]
 }

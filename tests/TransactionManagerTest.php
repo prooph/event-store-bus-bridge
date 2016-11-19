@@ -1,18 +1,21 @@
 <?php
-/*
- * This file is part of the prooph/event-store-bus-bridge.
- * (c) 2014-2015 prooph software GmbH <contact@prooph.de>
+/**
+ * This file is part of the prooph/service-bus.
+ * (c) 2014-%year% prooph software GmbH <contact@prooph.de>
+ * (c) 2015-%year% Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
- *
- * Date: 8/30/15 - 12:25 PM
  */
+
+declare(strict_types=1);
+
 namespace ProophTest\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\DefaultActionEvent;
+use Prooph\Common\Event\DefaultListenerHandler;
 use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
@@ -21,7 +24,8 @@ use Prooph\EventStore\Stream\StreamName;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prophecy\Argument;
-use Rhumsaa\Uuid\Uuid;
+use Prophecy\Prophecy\ObjectProphecy;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Class TransactionManagerTest
@@ -33,7 +37,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_attaches_itself_to_event_store_events()
+    public function it_attaches_itself_to_event_store_events(): void
     {
         $eventStoreMock = $this->prophesize(EventStore::class);
 
@@ -43,13 +47,15 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $appendToStreamListener = null;
 
         $emitter->attachListener('create.pre', Argument::any(), -1000)->will(
-            function ($args) use (&$createStreamListener) {
+            $function = function ($args) use (&$createStreamListener, &$function): ListenerHandler {
                 $createStreamListener = $args[1];
+                return new DefaultListenerHandler($function);
             }
         );
         $emitter->attachListener('appendTo.pre', Argument::any(), -1000)->will(
-            function ($args) use (&$appendToStreamListener) {
+            $function = function ($args) use (&$appendToStreamListener, &$function): ListenerHandler {
                 $appendToStreamListener = $args[1];
+                return new DefaultListenerHandler($function);
             }
         );
 
@@ -66,7 +72,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_attaches_itself_to_command_bus_initialize_and_finalize_events()
+    public function it_attaches_itself_to_command_bus_initialize_and_finalize_events(): void
     {
         $transactionManager = new TransactionManager();
 
@@ -83,7 +89,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_begins_a_transaction_on_command_dispatch_initialize()
+    public function it_begins_a_transaction_on_command_dispatch_initialize(): void
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
@@ -103,7 +109,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_commits_a_transaction_on_command_dispatch_finalize_if_no_exception_was_thrown()
+    public function it_commits_a_transaction_on_command_dispatch_finalize_if_no_exception_was_thrown(): void
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
@@ -125,7 +131,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_rollback_a_transaction_on_command_dispatch_finalize_if_exception_was_thrown()
+    public function it_rollback_a_transaction_on_command_dispatch_finalize_if_exception_was_thrown(): void
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
@@ -149,7 +155,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_does_not_perform_rollback_after_transaction_commit()
+    public function it_does_not_perform_rollback_after_transaction_commit(): void
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
@@ -173,7 +179,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_adds_causation_id_and_causation_name_on_event_store_create_stream()
+    public function it_adds_causation_id_and_causation_name_on_event_store_create_stream(): void
     {
         //Step 1: Track the command which will cause events
         $command = $this->prophesize(Message::class);
@@ -224,14 +230,14 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNotNull($enrichedStream);
         $this->assertEquals('event_stream', $enrichedStream->streamName()->toString());
-        $this->assertEquals(1, count($enrichedStream->streamEvents()));
+        $this->assertCount(1, $enrichedStream->streamEvents());
         $this->assertSame($recordedEventCopy2->reveal(), $enrichedStream->streamEvents()[0]);
     }
 
     /**
      * @test
      */
-    public function it_adds_causation_id_and_causation_name_on_event_store_append_to_stream()
+    public function it_adds_causation_id_and_causation_name_on_event_store_append_to_stream(): void
     {
         //Step 1: Track the command which will cause events
         $command = $this->prophesize(Message::class);
@@ -287,7 +293,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_returns_early_on_event_store_create_stream_if_event_has_no_stream()
+    public function it_returns_early_on_event_store_create_stream_if_event_has_no_stream(): void
     {
         $createStreamActionEvent = $this->prophesize(ActionEvent::class);
 
@@ -305,7 +311,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_returns_early_if_command_was_null_when_handling_events()
+    public function it_returns_early_if_command_was_null_when_handling_events(): void
     {
         //Step 1: Create null command
         $command = null;
@@ -338,12 +344,14 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($stream, $createStreamActionEvent->getParam('stream'));
     }
 
-    /**
-     * @return \Prophecy\Prophecy\ObjectProphecy
-     */
-    private function getEventStoreObjectProphecy()
+    private function getEventStoreObjectProphecy(): ObjectProphecy
     {
+        $listenerHandler = $this->prophesize(ListenerHandler::class);
+
         $actionEventEmitter = $this->prophesize(ActionEventEmitter::class);
+        $actionEventEmitter
+            ->attachListener(Argument::any(), Argument::any(), Argument::any())
+            ->willReturn($listenerHandler->reveal());
 
         $eventStoreMock = $this->prophesize(EventStore::class);
 

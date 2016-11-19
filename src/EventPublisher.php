@@ -1,13 +1,15 @@
 <?php
-/*
- * This file is part of the prooph/event-store-bus-bridge.
- * (c) 2014-2015 prooph software GmbH <contact@prooph.de>
+/**
+ * This file is part of the prooph/service-bus.
+ * (c) 2014-%year% prooph software GmbH <contact@prooph.de>
+ * (c) 2015-%year% Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
- *
- * Date: 8/30/15 - 5:46 PM
  */
+
+declare(strict_types=1);
+
 namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
@@ -30,31 +32,19 @@ final class EventPublisher implements Plugin
      */
     private $eventBus;
 
-    /**
-     * @param \Prooph\ServiceBus\EventBus $eventBus
-     */
     public function __construct(EventBus $eventBus)
     {
         $this->eventBus = $eventBus;
     }
 
-    /**
-     * @param EventStore $eventStore
-     * @return void
-     */
-    public function setUp(EventStore $eventStore)
+    public function setUp(EventStore $eventStore): void
     {
         $eventStore->getActionEventEmitter()->attachListener('commit.post', [$this, 'onEventStoreCommitPost']);
     }
 
-    /**
-     * Publish recorded events on the event bus
-     *
-     * @param ActionEvent $actionEvent
-     */
-    public function onEventStoreCommitPost(ActionEvent $actionEvent)
+    public function onEventStoreCommitPost(ActionEvent $actionEvent): void
     {
-        $recordedEvents = $actionEvent->getParam('recordedEvents', []);
+        $recordedEvents = $actionEvent->getParam('recordedEvents', new \ArrayIterator());
 
         foreach ($recordedEvents as $recordedEvent) {
             $this->eventBus->dispatch($recordedEvent);

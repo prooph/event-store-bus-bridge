@@ -1,13 +1,15 @@
 <?php
-/*
- * This file is part of prooph/event-store-bus-bridge.
- * (c) 2014-2015 prooph software GmbH <contact@prooph.de>
+/**
+ * This file is part of the prooph/service-bus.
+ * (c) 2014-%year% prooph software GmbH <contact@prooph.de>
+ * (c) 2015-%year% Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
- *
- * Date: 4/4/15 - 12:25 AM
  */
+
+declare(strict_types=1);
+
 namespace Prooph\EventStoreBusBridge;
 
 use Iterator;
@@ -47,25 +49,14 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
      */
     private $currentCommand;
 
-    /**
-     * @param EventStore $eventStore
-     * @return void
-     */
-    public function setUp(EventStore $eventStore)
+    public function setUp(EventStore $eventStore): void
     {
         $this->eventStore = $eventStore;
         $this->eventStore->getActionEventEmitter()->attachListener('create.pre', [$this, 'onEventStoreCreateStream'], -1000);
         $this->eventStore->getActionEventEmitter()->attachListener('appendTo.pre', [$this, 'onEventStoreAppendToStream'], -1000);
     }
 
-    /**
-     * Attaches itself to the command dispatch of the application command bus
-     *
-     * @param ActionEventEmitter $emitter
-     *
-     * @return void
-     */
-    public function attach(ActionEventEmitter $emitter)
+    public function attach(ActionEventEmitter $emitter): void
     {
         //Attach with a high priority, so that it invokes before the handler is invoked
         $this->trackHandler($emitter->attachListener(CommandBus::EVENT_INVOKE_HANDLER, [$this, 'onInvokeHandler'], 1000));
@@ -77,13 +68,10 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
      * This method takes domain events as argument which are going to be added to the event stream and
      * adds the causation_id (command UUID) and causation_name (name of the command which has caused the events)
      * as metadata to each event.
-     *
-     * @param Iterator $recordedEvents
-     * @return Iterator
      */
-    private function handleRecordedEvents(Iterator $recordedEvents)
+    private function handleRecordedEvents(Iterator $recordedEvents): Iterator
     {
-        if (is_null($this->currentCommand) || ! $this->currentCommand instanceof Message) {
+        if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
             return $recordedEvents;
         }
 
@@ -95,7 +83,6 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
         foreach ($recordedEvents as $recordedEvent) {
             $recordedEvent = $recordedEvent->withAddedMetadata('causation_id', $causationId);
             $recordedEvent = $recordedEvent->withAddedMetadata('causation_name', $causationName);
-
             $enrichedRecordedEvents[] = $recordedEvent;
         }
 
@@ -104,10 +91,8 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
 
     /**
      * Begin event store transaction before command gets handled
-     *
-     * @param ActionEvent $actionEvent
      */
-    public function onInvokeHandler(ActionEvent $actionEvent)
+    public function onInvokeHandler(ActionEvent $actionEvent): void
     {
         $this->currentCommand = $actionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE);
 
@@ -117,10 +102,8 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
     /**
      * Check if exception an exception was thrown. If so rollback event store transaction
      * otherwise commit it.
-     *
-     * @param ActionEvent $actionEvent
      */
-    public function onFinalize(ActionEvent $actionEvent)
+    public function onFinalize(ActionEvent $actionEvent): void
     {
         if ($this->eventStore->isInTransaction()) {
             if ($actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
@@ -135,10 +118,8 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
 
     /**
      * Add event metadata on event store createStream
-     *
-     * @param ActionEvent $createEvent
      */
-    public function onEventStoreCreateStream(ActionEvent $createEvent)
+    public function onEventStoreCreateStream(ActionEvent $createEvent): void
     {
         $stream = $createEvent->getParam('stream');
 
@@ -154,10 +135,8 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
 
     /**
      * Add event metadata on event store appendToStream
-     *
-     * @param ActionEvent $appendToStreamEvent
      */
-    public function onEventStoreAppendToStream(ActionEvent $appendToStreamEvent)
+    public function onEventStoreAppendToStream(ActionEvent $appendToStreamEvent): void
     {
         $streamEvents = $appendToStreamEvent->getParam('streamEvents');
         $streamEvents = $this->handleRecordedEvents($streamEvents);
