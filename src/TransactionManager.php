@@ -71,7 +71,7 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
      */
     private function handleRecordedEvents(Iterator $recordedEvents): Iterator
     {
-        if (null !== $this->currentCommand || ! $this->currentCommand instanceof Message) {
+        if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
             return $recordedEvents;
         }
 
@@ -83,7 +83,6 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
         foreach ($recordedEvents as $recordedEvent) {
             $recordedEvent = $recordedEvent->withAddedMetadata('causation_id', $causationId);
             $recordedEvent = $recordedEvent->withAddedMetadata('causation_name', $causationName);
-
             $enrichedRecordedEvents[] = $recordedEvent;
         }
 

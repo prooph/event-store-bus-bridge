@@ -230,7 +230,7 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNotNull($enrichedStream);
         $this->assertEquals('event_stream', $enrichedStream->streamName()->toString());
-        $this->assertEquals(1, count($enrichedStream->streamEvents()));
+        $this->assertCount(1, $enrichedStream->streamEvents());
         $this->assertSame($recordedEventCopy2->reveal(), $enrichedStream->streamEvents()[0]);
     }
 
@@ -349,7 +349,9 @@ final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $listenerHandler = $this->prophesize(ListenerHandler::class);
 
         $actionEventEmitter = $this->prophesize(ActionEventEmitter::class);
-        $actionEventEmitter->attachListener(Argument::any(), Argument::any(), Argument::any())->willReturn($listenerHandler->reveal());
+        $actionEventEmitter
+            ->attachListener(Argument::any(), Argument::any(), Argument::any())
+            ->willReturn($listenerHandler->reveal());
 
         $eventStoreMock = $this->prophesize(EventStore::class);
 
