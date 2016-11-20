@@ -54,16 +54,12 @@ class EventPublisherTest extends \PHPUnit_Framework_TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $commitPostListener = null;
-
         $eventPublisher->setUp($this->eventStore);
 
-        $commitPostEvent = $this->prophesize(ActionEvent::class);
-
-        $commitPostEvent->getParam('recordedEvents', new \ArrayIterator())->willReturn([$event1, $event2]);
-
+        $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
         $this->eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]));
+        $this->eventStore->commit();
     }
 
     /**
@@ -85,13 +81,7 @@ class EventPublisherTest extends \PHPUnit_Framework_TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $commitPostListener = null;
-
         $eventPublisher->setUp($this->eventStore);
-
-        $commitPostEvent = $this->prophesize(ActionEvent::class);
-
-        $commitPostEvent->getParam('recordedEvents', new \ArrayIterator())->willReturn([$event1, $event2]);
 
         $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));

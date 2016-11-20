@@ -17,12 +17,16 @@ use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\DefaultActionEvent;
 use Prooph\Common\Event\DefaultListenerHandler;
 use Prooph\Common\Event\ListenerHandler;
+use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\Plugin\Router\CommandRouter;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Ramsey\Uuid\Uuid;
@@ -32,148 +36,64 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_attaches_itself_to_event_store_events(): void
-    {
-        $eventStoreMock = $this->prophesize(EventStore::class);
-
-        $emitter = $this->prophesize(ActionEventEmitter::class);
-
-        $createStreamListener = null;
-        $appendToStreamListener = null;
-
-        $emitter->attachListener('create.pre', Argument::any(), -1000)->will(
-            $function = function ($args) use (&$createStreamListener, &$function): ListenerHandler {
-                $createStreamListener = $args[1];
-                return new DefaultListenerHandler($function);
-            }
-        );
-        $emitter->attachListener('appendTo.pre', Argument::any(), -1000)->will(
-            $function = function ($args) use (&$appendToStreamListener, &$function): ListenerHandler {
-                $appendToStreamListener = $args[1];
-                return new DefaultListenerHandler($function);
-            }
-        );
-
-        $eventStoreMock->getActionEventEmitter()->willReturn($emitter->reveal());
-
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStoreMock->reveal());
-
-        $this->assertEquals([$transactionManager, 'onEventStoreCreateStream'], $createStreamListener);
-        $this->assertEquals([$transactionManager, 'onEventStoreAppendToStream'], $appendToStreamListener);
-    }
-
-    /**
-     * @test
-     */
-    public function it_attaches_itself_to_command_bus_initialize_and_finalize_events(): void
-    {
-        $transactionManager = new TransactionManager();
-
-        $commandBusEmitter = $this->prophesize(ActionEventEmitter::class);
-
-        $commandBusEmitter->attachListener(CommandBus::EVENT_INVOKE_HANDLER, [$transactionManager, 'onInvokeHandler'], 1000)
-            ->willReturn($this->prophesize(ListenerHandler::class)->reveal());
-        $commandBusEmitter->attachListener(CommandBus::EVENT_FINALIZE, [$transactionManager, 'onFinalize'], 1000)
-            ->willReturn($this->prophesize(ListenerHandler::class)->reveal());
-
-        $transactionManager->attach($commandBusEmitter->reveal());
-    }
-
-    /**
-     * @test
-     */
-    public function it_begins_a_transaction_on_command_dispatch_initialize(): void
+    public function it_handles_transactions(): void
     {
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
         $eventStoreMock->beginTransaction()->shouldBeCalled();
-
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStoreMock->reveal());
-
-        $actionEvent = $this->prophesize(ActionEvent::class);
-
-        $actionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE)->willReturn("a message");
-
-        $transactionManager->onInvokeHandler($actionEvent->reveal());
-    }
-
-    /**
-     * @test
-     */
-    public function it_commits_a_transaction_on_command_dispatch_finalize_if_no_exception_was_thrown(): void
-    {
-        $eventStoreMock = $this->getEventStoreObjectProphecy();
-
-        $eventStoreMock->isInTransaction()->willReturn(true);
-
+        $eventStoreMock->isInTransaction()->willReturn(true)->shouldBeCalled();
         $eventStoreMock->commit()->shouldBeCalled();
 
         $transactionManager = new TransactionManager();
 
         $transactionManager->setUp($eventStoreMock->reveal());
 
-        $actionEvent = $this->prophesize(ActionEvent::class);
+        $commandBus = new CommandBus();
+        $router = new CommandRouter();
+        $router->route('a message')->to(function () {
 
-        $actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)->willReturn(null);
+        });
+        $commandBus->utilize($router);
 
-        $transactionManager->onFinalize($actionEvent->reveal());
+        $transactionManager->attach($commandBus->getActionEventEmitter());
+
+        $commandBus->dispatch('a message');
     }
 
     /**
      * @test
      */
-    public function it_rollback_a_transaction_on_command_dispatch_finalize_if_exception_was_thrown(): void
+    public function it_rolls_back_transactions(): void
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('foo');
+
         $eventStoreMock = $this->getEventStoreObjectProphecy();
 
-        $eventStoreMock->isInTransaction()->willReturn(true);
-
+        $eventStoreMock->beginTransaction()->shouldBeCalled();
+        $eventStoreMock->isInTransaction()->willReturn(true)->shouldBeCalled();
         $eventStoreMock->rollback()->shouldBeCalled();
 
         $transactionManager = new TransactionManager();
 
         $transactionManager->setUp($eventStoreMock->reveal());
 
-        $actionEvent = $this->prophesize(ActionEvent::class);
+        $commandBus = new CommandBus();
+        $router = new CommandRouter();
+        $router->route('a message')->to(function () {
+            throw new \RuntimeException('foo');
+        });
+        $commandBus->utilize($router);
 
-        $exception = $this->prophesize(\Exception::class);
+        $transactionManager->attach($commandBus->getActionEventEmitter());
 
-        $actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)->willReturn($exception->reveal());
-
-        $transactionManager->onFinalize($actionEvent->reveal());
+        $commandBus->dispatch('a message');
     }
 
     /**
      * @test
-     */
-    public function it_does_not_perform_rollback_after_transaction_commit(): void
-    {
-        $eventStoreMock = $this->getEventStoreObjectProphecy();
 
-        $eventStoreMock->isInTransaction()->willReturn(false);
 
-        $eventStoreMock->rollback()->shouldNotBeCalled();
-
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStoreMock->reveal());
-
-        $actionEvent = $this->prophesize(ActionEvent::class);
-
-        $exception = $this->prophesize(\Exception::class);
-
-        $actionEvent->getParam(CommandBus::EVENT_PARAM_EXCEPTION)->willReturn($exception->reveal());
-
-        $transactionManager->onFinalize($actionEvent->reveal());
-    }
-
-    /**
-     * @test
-     */
     public function it_adds_causation_id_and_causation_name_on_event_store_create_stream(): void
     {
         //Step 1: Track the command which will cause events
@@ -231,7 +151,7 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     */
+     *
     public function it_adds_causation_id_and_causation_name_on_event_store_append_to_stream(): void
     {
         //Step 1: Track the command which will cause events
@@ -287,7 +207,7 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     */
+
     public function it_returns_early_on_event_store_create_stream_if_event_has_no_stream(): void
     {
         $createStreamActionEvent = $this->prophesize(ActionEvent::class);
@@ -302,55 +222,13 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNull($transactionManager->onEventStoreCreateStream($createStreamActionEvent->reveal()));
     }
-
-    /**
-     * @test
-     */
-    public function it_returns_early_if_command_was_null_when_handling_events(): void
-    {
-        //Step 1: Create null command
-        $command = null;
-
-        $initializeActionEvent = $this->prophesize(ActionEvent::class);
-
-        $initializeActionEvent->getParam(CommandBus::EVENT_PARAM_MESSAGE)->willReturn($command);
-
-        $eventStoreMock = $this->getEventStoreObjectProphecy();
-
-        $eventStoreMock->beginTransaction()->shouldBeCalled();
-
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStoreMock->reveal());
-
-        $transactionManager->onInvokeHandler($initializeActionEvent->reveal());
-
-        $recordedEvent = $this->prophesize(Message::class);
-
-        $recordedEvent->withAddedMetadata('causation_id', Argument::any())->shouldNotBeCalled();
-
-        $stream = new Stream(new StreamName('event_stream'), new \ArrayIterator([$recordedEvent->reveal()]));
-
-        $createStreamActionEvent = new DefaultActionEvent('test');
-        $createStreamActionEvent->setParam('stream', $stream);
-
-        $transactionManager->onEventStoreCreateStream($createStreamActionEvent);
-
-        $this->assertEquals($stream, $createStreamActionEvent->getParam('stream'));
-    }
+*/
 
     private function getEventStoreObjectProphecy(): ObjectProphecy
     {
-        $listenerHandler = $this->prophesize(ListenerHandler::class);
+        $eventStoreMock = $this->prophesize(CanControlTransactionActionEventEmitterAwareEventStore::class);
 
-        $actionEventEmitter = $this->prophesize(ActionEventEmitter::class);
-        $actionEventEmitter
-            ->attachListener(Argument::any(), Argument::any(), Argument::any())
-            ->willReturn($listenerHandler->reveal());
-
-        $eventStoreMock = $this->prophesize(EventStore::class);
-
-        $eventStoreMock->getActionEventEmitter()->willReturn($actionEventEmitter->reveal());
+        $eventStoreMock->getActionEventEmitter()->willReturn(new ProophActionEventEmitter());
 
         return $eventStoreMock;
     }
