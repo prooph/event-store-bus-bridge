@@ -13,24 +13,24 @@ declare(strict_types=1);
 namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
+use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Plugin\Plugin;
+use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
 
-/**
- * Class EventPublisher
- *
- * The EventPublisher listens on event store commit.post events
- * and publishes all recorded events on the event bus
- *
- * @package Prooph\EventStoreBusBridge
- */
 final class EventPublisher implements Plugin
 {
     /**
      * @var EventBus
      */
     private $eventBus;
+
+    /**
+     * @var \Iterator[]
+     */
+    private $cachedEventStreams = [];
 
     public function __construct(EventBus $eventBus)
     {
@@ -39,15 +39,54 @@ final class EventPublisher implements Plugin
 
     public function setUp(EventStore $eventStore): void
     {
-        $eventStore->getActionEventEmitter()->attachListener('commit.post', [$this, 'onEventStoreCommitPost']);
-    }
+        if (! $eventStore instanceof ActionEventEmitterAwareEventStore) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'EventStore must implement %s',
+                    ActionEventEmitterAwareEventStore::class
+                )
+            );
+        }
 
-    public function onEventStoreCommitPost(ActionEvent $actionEvent): void
-    {
-        $recordedEvents = $actionEvent->getParam('recordedEvents', new \ArrayIterator());
+        $fetchRecordedEvents = function (ActionEvent $event) use ($eventStore): void {
+            $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
 
-        foreach ($recordedEvents as $recordedEvent) {
-            $this->eventBus->dispatch($recordedEvent);
+            if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+                foreach ($recordedEvents as $recordedEvent) {
+                    $this->eventBus->dispatch($recordedEvent);
+                }
+            } else {
+                $this->cachedEventStreams[] = $recordedEvents;
+            }
+        };
+
+        $eventStore->getActionEventEmitter()->attachListener(
+            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+            $fetchRecordedEvents
+        );
+        $eventStore->getActionEventEmitter()->attachListener(
+            ActionEventEmitterAwareEventStore::EVENT_CREATE,
+            $fetchRecordedEvents
+        );
+
+        if ($eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+            $eventStore->getActionEventEmitter()->attachListener(
+                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_COMMIT,
+                function (ActionEvent $event): void {
+                    foreach ($this->cachedEventStreams as $stream) {
+                        foreach ($stream as $recordedEvent) {
+                            $this->eventBus->dispatch($recordedEvent);
+                        }
+                    }
+                    $this->cachedEventStreams = [];
+                }
+            );
+            $eventStore->getActionEventEmitter()->attachListener(
+                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_ROLLBACK,
+                function (ActionEvent $event): void {
+                    $this->cachedEventStreams = [];
+                }
+            );
         }
     }
 }

@@ -13,30 +13,30 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
-use Prooph\EventStoreBusBridge\Container\TransactionManagerFactory;
-use Prooph\EventStoreBusBridge\TransactionManager;
+use Prooph\EventStoreBusBridge\Container\CausationMetadataEnricherFactory;
+use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
 use Prooph\ServiceBus\CommandBus;
 use Prophecy\Argument;
 
-class TransactionManagerFactoryTest extends \PHPUnit_Framework_TestCase
+class CausationMetadataEnricherFactoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
      */
-    public function it_creates_a_transaction_manager(): void
+    public function it_creates_a_causation_metadata_enricher(): void
     {
         $commandBus = $this->prophesize(CommandBus::class);
 
-        $commandBus->utilize(Argument::type(TransactionManager::class))->shouldBeCalled();
+        $commandBus->utilize(Argument::type(CausationMetadataEnricher::class))->shouldBeCalled();
 
         $container = $this->prophesize(ContainerInterface::class);
 
         $container->get(CommandBus::class)->willReturn($commandBus->reveal());
 
-        $factory = new TransactionManagerFactory();
+        $factory = new CausationMetadataEnricherFactory();
 
-        $transactionManager = $factory($container->reveal());
+        $CausationMetadataEnricher = $factory($container->reveal());
 
-        $this->assertInstanceOf(TransactionManager::class, $transactionManager);
+        $this->assertInstanceOf(CausationMetadataEnricher::class, $CausationMetadataEnricher);
     }
 }

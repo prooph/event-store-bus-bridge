@@ -19,20 +19,15 @@ use Prooph\Common\Event\DefaultListenerHandler;
 use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Stream\Stream;
-use Prooph\EventStore\Stream\StreamName;
+use Prooph\EventStore\Stream;
+use Prooph\EventStore\StreamName;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Ramsey\Uuid\Uuid;
 
-/**
- * Class TransactionManagerTest
- *
- * @package ProophTest\EventStoreBusBridge
- */
-final class TransactionManagerTest extends \PHPUnit_Framework_TestCase
+class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test

@@ -17,12 +17,7 @@ use Prooph\EventStoreBusBridge\Container\EventPublisherFactory;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\ServiceBus\EventBus;
 
-/**
- * Class EventPublisherFactoryTest
- *
- * @package ProophTest\EventStoreBusBridge\Container
- */
-final class EventPublisherFactoryTest extends \PHPUnit_Framework_TestCase
+class EventPublisherFactoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
