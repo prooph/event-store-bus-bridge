@@ -14,7 +14,7 @@ namespace ProophTest\EventStoreBusBridge;
 
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
@@ -96,7 +96,7 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
     private function getEventStoreObjectProphecy(): ObjectProphecy
     {
-        $eventStore = $this->prophesize(CanControlTransactionActionEventEmitterAwareEventStore::class);
+        $eventStore = $this->prophesize(TransactionalActionEventEmitterEventStore::class);
 
         $eventStore->getActionEventEmitter()->willReturn(new ProophActionEventEmitter());
 

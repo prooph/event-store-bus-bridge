@@ -18,7 +18,7 @@ use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ActionEventListenerAggregate;
 use Prooph\Common\Event\DetachAggregateHandlers;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\Plugin\Plugin;
@@ -37,17 +37,17 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
 
     public function setUp(EventStore $eventStore): void
     {
-        if (! $eventStore instanceof ActionEventEmitterAwareEventStore) {
+        if (! $eventStore instanceof ActionEventEmitterEventStore) {
             throw new InvalidArgumentException(
                 sprintf(
                     'EventStore must implement %s',
-                    ActionEventEmitterAwareEventStore::class
+                    ActionEventEmitterEventStore::class
                 )
             );
         }
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event): void {
                 if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
                     return;
@@ -67,7 +67,7 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
         );
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_CREATE,
+            ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event): void {
                 if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
                     return;
