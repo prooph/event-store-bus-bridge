@@ -36,8 +36,8 @@ class EventPublisherTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-    * @test
-    */
+     * @test
+     */
     public function it_publishes_all_created_and_appended_events(): void
     {
         $event1 = $this->prophesize(Message::class)->reveal();

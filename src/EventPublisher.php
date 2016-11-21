@@ -48,25 +48,34 @@ final class EventPublisher implements Plugin
             );
         }
 
-        $fetchRecordedEvents = function (ActionEvent $event) use ($eventStore): void {
-            $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
-
-            if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
-                foreach ($recordedEvents as $recordedEvent) {
-                    $this->eventBus->dispatch($recordedEvent);
-                }
-            } else {
-                $this->cachedEventStreams[] = $recordedEvents;
-            }
-        };
-
         $eventStore->getActionEventEmitter()->attachListener(
             ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
-            $fetchRecordedEvents
+            function (ActionEvent $event) use ($eventStore): void {
+                $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
+
+                if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+                    foreach ($recordedEvents as $recordedEvent) {
+                        $this->eventBus->dispatch($recordedEvent);
+                    }
+                } else {
+                    $this->cachedEventStreams[] = $recordedEvents;
+                }
+            }
         );
         $eventStore->getActionEventEmitter()->attachListener(
             ActionEventEmitterAwareEventStore::EVENT_CREATE,
-            $fetchRecordedEvents
+            function (ActionEvent $event) use ($eventStore): void {
+                $stream = $event->getParam('stream');
+                $recordedEvents = $stream->streamEvents();
+
+                if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+                    foreach ($recordedEvents as $recordedEvent) {
+                        $this->eventBus->dispatch($recordedEvent);
+                    }
+                } else {
+                    $this->cachedEventStreams[] = $recordedEvents;
+                }
+            }
         );
 
         if ($eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
