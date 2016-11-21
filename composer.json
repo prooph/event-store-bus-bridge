@@ -47,6 +47,15 @@
             "ProophTest\\ServiceBus\\": "vendor/prooph/service-bus/tests/"
         }
     },
+    "scripts": {
+        "check": [
+            "@cs",
+            "@test"
+        ],
+        "cs": "php-cs-fixer fix -v --diff --dry-run",
+        "cs-fix": "php-cs-fixer fix -v --diff",
+        "test": "phpunit"
+    },
     "repositories": [
         {
             "type": "git",
