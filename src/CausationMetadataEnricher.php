@@ -102,7 +102,7 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
                 function (ActionEvent $event): void {
                     $this->currentCommand = $event->getParam(CommandBus::EVENT_PARAM_MESSAGE);
                 },
-                900
+                1000
             )
         );
 
@@ -112,7 +112,7 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
                 function (ActionEvent $event): void {
                     $this->currentCommand = null;
                 },
-                900
+                1000
             )
         );
     }

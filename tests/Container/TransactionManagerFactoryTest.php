@@ -14,6 +14,7 @@ namespace ProophTest\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
 use Prooph\EventStoreBusBridge\Container\TransactionManagerFactory;
+use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prophecy\Argument;
@@ -38,5 +39,35 @@ class TransactionManagerFactoryTest extends \PHPUnit_Framework_TestCase
         $transactionManager = $factory($container->reveal());
 
         $this->assertInstanceOf(TransactionManager::class, $transactionManager);
+    }
+
+    /**
+     * @test
+     */
+    public function it_creates_a_transaction_manager_via_callstatic(): void
+    {
+        $commandBus = $this->prophesize(CommandBus::class);
+
+        $commandBus->utilize(Argument::type(TransactionManager::class))->shouldBeCalled();
+
+        $container = $this->prophesize(ContainerInterface::class);
+
+        $container->get('foo')->willReturn($commandBus->reveal());
+
+        $type = 'foo';
+        $transactionManager = TransactionManagerFactory::$type($container->reveal());
+
+        $this->assertInstanceOf(TransactionManager::class, $transactionManager);
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_container_passed_to_callstatic(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $type = 'foo';
+        TransactionManagerFactory::$type('invalid container');
     }
 }

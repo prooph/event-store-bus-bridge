@@ -14,6 +14,7 @@ namespace Prooph\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
 use Prooph\EventStoreBusBridge\EventPublisher;
+use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
 
 final class EventPublisherFactory
@@ -36,12 +37,12 @@ final class EventPublisherFactory
      * ];
      * </code>
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function __callStatic(string $name, array $arguments): EventPublisher
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf('The first argument must be of type %s', ContainerInterface::class)
             );
         }

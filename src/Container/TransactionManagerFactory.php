@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Prooph\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
+use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 
@@ -35,12 +36,12 @@ final class TransactionManagerFactory
      * ];
      * </code>
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function __callStatic(string $name, array $arguments): TransactionManager
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf('The first argument must be of type %s', ContainerInterface::class)
             );
         }

@@ -13,6 +13,7 @@ namespace Prooph\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
 use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
+use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\CommandBus;
 
 final class CausationMetadataEnricherFactory
@@ -35,12 +36,12 @@ final class CausationMetadataEnricherFactory
      * ];
      * </code>
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function __callStatic(string $name, array $arguments): CausationMetadataEnricher
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf('The first argument must be of type %s', ContainerInterface::class)
             );
         }
@@ -56,10 +57,10 @@ final class CausationMetadataEnricherFactory
     {
         $commandBus = $container->get($this->commandBusServiceName);
 
-        $CausationMetadataEnricher = new CausationMetadataEnricher();
+        $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $commandBus->utilize($CausationMetadataEnricher);
+        $commandBus->utilize($causationMetadataEnricher);
 
-        return $CausationMetadataEnricher;
+        return $causationMetadataEnricher;
     }
 }

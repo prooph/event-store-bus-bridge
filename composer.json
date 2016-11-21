@@ -22,9 +22,9 @@
     ],
     "require": {
         "php": "^7.1",
-        "prooph/common" : "dev-php_7_1 as 4.0.0",
-        "prooph/service-bus" : "dev-php_7_1 as 6.0.0",
-        "prooph/event-store" : "dev-php_7_1 as 7.0.0"
+        "prooph/common" : "4.0.x-dev",
+        "prooph/service-bus" : "6.0.x-dev",
+        "prooph/event-store" : "7.0.x-dev"
     },
     "require-dev": {
         "container-interop/container-interop": "^1.1",
@@ -43,7 +43,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ProophTest\\EventStoreBusBridge\\": "tests/"
+            "ProophTest\\EventStoreBusBridge\\": "tests/",
+            "ProophTest\\ServiceBus\\": "vendor/prooph/service-bus/tests/"
         }
     },
     "repositories": [
