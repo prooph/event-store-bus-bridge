@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
-use Prooph\EventStore\ActionEventEmitterAwareEventStore;
-use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
+use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
@@ -39,21 +39,21 @@ final class EventPublisher implements Plugin
 
     public function setUp(EventStore $eventStore): void
     {
-        if (! $eventStore instanceof ActionEventEmitterAwareEventStore) {
+        if (! $eventStore instanceof ActionEventEmitterEventStore) {
             throw new InvalidArgumentException(
                 sprintf(
                     'EventStore must implement %s',
-                    ActionEventEmitterAwareEventStore::class
+                    ActionEventEmitterEventStore::class
                 )
             );
         }
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use ($eventStore): void {
                 $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
 
-                if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+                if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
                     foreach ($recordedEvents as $recordedEvent) {
                         $this->eventBus->dispatch($recordedEvent);
                     }
@@ -63,12 +63,12 @@ final class EventPublisher implements Plugin
             }
         );
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_CREATE,
+            ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use ($eventStore): void {
                 $stream = $event->getParam('stream');
                 $recordedEvents = $stream->streamEvents();
 
-                if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+                if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
                     foreach ($recordedEvents as $recordedEvent) {
                         $this->eventBus->dispatch($recordedEvent);
                     }
@@ -78,9 +78,9 @@ final class EventPublisher implements Plugin
             }
         );
 
-        if ($eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+        if ($eventStore instanceof TransactionalActionEventEmitterEventStore) {
             $eventStore->getActionEventEmitter()->attachListener(
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_COMMIT,
+                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
                 function (ActionEvent $event): void {
                     foreach ($this->cachedEventStreams as $stream) {
                         foreach ($stream as $recordedEvent) {
@@ -91,7 +91,7 @@ final class EventPublisher implements Plugin
                 }
             );
             $eventStore->getActionEventEmitter()->attachListener(
-                CanControlTransactionActionEventEmitterAwareEventStore::EVENT_ROLLBACK,
+                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
                 function (ActionEvent $event): void {
                     $this->cachedEventStreams = [];
                 }
