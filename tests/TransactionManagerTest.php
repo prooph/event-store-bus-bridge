@@ -12,25 +12,15 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStoreBusBridge;
 
-use Prooph\Common\Event\ActionEvent;
-use Prooph\Common\Event\ActionEventEmitter;
-use Prooph\Common\Event\DefaultActionEvent;
-use Prooph\Common\Event\DefaultListenerHandler;
-use Prooph\Common\Event\ListenerHandler;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
-use Prooph\EventStore\ActionEventEmitterAwareEventStore;
 use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Stream;
-use Prooph\EventStore\StreamName;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
-use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Ramsey\Uuid\Uuid;
 
 class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 {
@@ -52,7 +42,6 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
         $commandBus = new CommandBus();
         $router = new CommandRouter();
         $router->route('a message')->to(function () {
-
         });
         $commandBus->utilize($router);
 

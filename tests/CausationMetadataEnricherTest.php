@@ -16,7 +16,6 @@ use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\EventStore\ActionEventEmitterAwareEventStore;
-use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\InMemoryEventStore;
 use Prooph\EventStore\Stream;
@@ -24,12 +23,9 @@ use Prooph\EventStore\StreamName;
 use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\CommandBus;
-use Prooph\ServiceBus\MessageBus;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
-use ProophTest\EventStore\Mock\UserCreated;
 use ProophTest\ServiceBus\Mock\DoSomething;
 use ProophTest\ServiceBus\Mock\SomethingDone;
-use Prophecy\Prophecy\ObjectProphecy;
 
 class CausationMetadataEnricherTest extends TestCase
 {
