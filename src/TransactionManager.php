@@ -16,7 +16,7 @@ use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ActionEventListenerAggregate;
 use Prooph\Common\Event\DetachAggregateHandlers;
-use Prooph\EventStore\CanControlTransactionActionEventEmitterAwareEventStore;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
@@ -37,17 +37,17 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
     use DetachAggregateHandlers;
 
     /**
-     * @var CanControlTransactionActionEventEmitterAwareEventStore
+     * @var TransactionalActionEventEmitterEventStore
      */
     private $eventStore;
 
     public function setUp(EventStore $eventStore): void
     {
-        if (! $eventStore instanceof CanControlTransactionActionEventEmitterAwareEventStore) {
+        if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
             throw new InvalidArgumentException(
                 sprintf(
                     'EventStore must implement %s',
-                    CanControlTransactionActionEventEmitterAwareEventStore::class
+                    TransactionalActionEventEmitterEventStore::class
                 )
             );
         }

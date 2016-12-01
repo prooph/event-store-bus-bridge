@@ -15,7 +15,7 @@ namespace ProophTest\EventStoreBusBridge;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
-use Prooph\EventStore\ActionEventEmitterAwareEventStore;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\InMemoryEventStore;
 use Prooph\EventStore\Stream;
@@ -71,7 +71,7 @@ class CausationMetadataEnricherTest extends TestCase
         $result = null;
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_CREATE,
+            ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
                 $result = $stream->streamEvents()->current();
@@ -126,7 +126,7 @@ class CausationMetadataEnricherTest extends TestCase
         $result = null;
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use (&$result): void {
                 $streamEvents = $event->getParam('streamEvents');
                 $streamEvents->rewind();
@@ -177,7 +177,7 @@ class CausationMetadataEnricherTest extends TestCase
         $result = null;
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_CREATE,
+            ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
                 $result = $stream->streamEvents()->current();
@@ -245,7 +245,7 @@ class CausationMetadataEnricherTest extends TestCase
         $result = null;
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use (&$result): void {
                 $streamEvents = $event->getParam('streamEvents');
                 $streamEvents->rewind();
@@ -309,7 +309,7 @@ class CausationMetadataEnricherTest extends TestCase
         $result = null;
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_CREATE,
+            ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
                 $result = $stream->streamEvents()->current();
@@ -374,7 +374,7 @@ class CausationMetadataEnricherTest extends TestCase
         $result = null;
 
         $eventStore->getActionEventEmitter()->attachListener(
-            ActionEventEmitterAwareEventStore::EVENT_APPEND_TO,
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use (&$result): void {
                 $streamEvents = $event->getParam('streamEvents');
                 $streamEvents->rewind();
