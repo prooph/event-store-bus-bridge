@@ -62,7 +62,7 @@ class CausationMetadataEnricherTest extends TestCase
                 new Stream(
                     new StreamName('something'),
                     new \ArrayIterator([
-                        new SomethingDone(['name' => $command->payload('name')])
+                        new SomethingDone(['name' => $command->payload('name')]),
                     ])
                 )
             );
@@ -118,7 +118,7 @@ class CausationMetadataEnricherTest extends TestCase
             $eventStore->appendTo(
                 new StreamName('something'),
                 new \ArrayIterator([
-                    new SomethingDone(['name' => $command->payload('name')])
+                    new SomethingDone(['name' => $command->payload('name')]),
                 ])
             );
         });
@@ -168,7 +168,7 @@ class CausationMetadataEnricherTest extends TestCase
                 new Stream(
                     new StreamName('something'),
                     new \ArrayIterator([
-                        new SomethingDone(['name' => $command->payload('name')])
+                        new SomethingDone(['name' => $command->payload('name')]),
                     ])
                 )
             );
@@ -237,7 +237,7 @@ class CausationMetadataEnricherTest extends TestCase
             $eventStore->appendTo(
                 new StreamName('something'),
                 new \ArrayIterator([
-                    new SomethingDone(['name' => $command->payload('name')])
+                    new SomethingDone(['name' => $command->payload('name')]),
                 ])
             );
         });
@@ -300,7 +300,7 @@ class CausationMetadataEnricherTest extends TestCase
                 new Stream(
                     new StreamName('something'),
                     new \ArrayIterator([
-                        new SomethingDone(['foo' => 'bar'])
+                        new SomethingDone(['foo' => 'bar']),
                     ])
                 )
             );
@@ -366,7 +366,7 @@ class CausationMetadataEnricherTest extends TestCase
             $eventStore->appendTo(
                 new StreamName('something'),
                 new \ArrayIterator([
-                    new SomethingDone(['foo' => 'bar'])
+                    new SomethingDone(['foo' => 'bar']),
                 ])
             );
         });

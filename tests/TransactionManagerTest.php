@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge;
 
 use Prooph\Common\Event\ProophActionEventEmitter;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
