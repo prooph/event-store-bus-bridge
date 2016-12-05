@@ -18,6 +18,7 @@ use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\Exception\MessageDispatchException;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -54,9 +55,6 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
      */
     public function it_rolls_back_transactions(): void
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('foo');
-
         $eventStore = $this->getEventStoreObjectProphecy();
 
         $eventStore->beginTransaction()->shouldBeCalled();
@@ -76,7 +74,16 @@ class TransactionManagerTest extends \PHPUnit_Framework_TestCase
 
         $transactionManager->attach($commandBus->getActionEventEmitter());
 
-        $commandBus->dispatch('a message');
+        try {
+            $commandBus->dispatch('a message');
+        } catch (MessageDispatchException $e) {
+            $this->assertInstanceOf(\RuntimeException::class, $e->getPrevious());
+            $this->assertEquals('foo', $e->getPrevious()->getMessage());
+
+            return;
+        }
+
+        $this->fail('No exception thrown');
     }
 
     /**

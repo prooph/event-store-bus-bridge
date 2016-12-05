@@ -98,11 +98,11 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
     {
         $this->trackHandler(
             $emitter->attachListener(
-                CommandBus::EVENT_INVOKE_HANDLER,
+                CommandBus::EVENT_DISPATCH,
                 function (ActionEvent $event): void {
                     $this->currentCommand = $event->getParam(CommandBus::EVENT_PARAM_MESSAGE);
                 },
-                1000
+                CommandBus::PRIORITY_INVOKE_HANDLER + 1000
             )
         );
 

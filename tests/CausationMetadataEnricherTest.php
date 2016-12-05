@@ -191,19 +191,19 @@ class CausationMetadataEnricherTest extends TestCase
         $command = new DoSomething(['name' => 'Alex'], 1);
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
             },
-            2000
+            CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
-            500
+            CommandBus::PRIORITY_INVOKE_HANDLER + 500
         );
 
         $commandBus->dispatch($command);
@@ -260,19 +260,19 @@ class CausationMetadataEnricherTest extends TestCase
         $command = new DoSomething(['name' => 'Alex'], 1);
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
             },
-            2000
+            CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
-            500
+            CommandBus::PRIORITY_INVOKE_HANDLER + 500
         );
 
         $commandBus->dispatch($command);
@@ -323,19 +323,19 @@ class CausationMetadataEnricherTest extends TestCase
         $command = 'do something';
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
             },
-            2000
+            CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
-            500
+            CommandBus::PRIORITY_INVOKE_HANDLER + 500
         );
 
         $commandBus->dispatch($command);
@@ -389,19 +389,19 @@ class CausationMetadataEnricherTest extends TestCase
         $command = 'do something';
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
             },
-            2000
+            CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
         $commandBus->getActionEventEmitter()->attachListener(
-            CommandBus::EVENT_INVOKE_HANDLER,
+            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
-            500
+            CommandBus::PRIORITY_INVOKE_HANDLER + 500
         );
 
         $commandBus->dispatch($command);

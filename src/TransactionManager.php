@@ -59,11 +59,11 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
     {
         $this->trackHandler(
             $emitter->attachListener(
-                CommandBus::EVENT_INVOKE_HANDLER,
+                CommandBus::EVENT_DISPATCH,
                 function (ActionEvent $event): void {
                     $this->eventStore->beginTransaction();
                 },
-                1000
+                CommandBus::PRIORITY_INVOKE_HANDLER + 1000
             )
         );
 
