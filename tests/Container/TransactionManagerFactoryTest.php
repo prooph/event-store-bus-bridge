@@ -13,13 +13,14 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
+use PHPUnit\Framework\TestCase;
 use Prooph\EventStoreBusBridge\Container\TransactionManagerFactory;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prophecy\Argument;
 
-class TransactionManagerFactoryTest extends \PHPUnit_Framework_TestCase
+class TransactionManagerFactoryTest extends TestCase
 {
     /**
      * @test

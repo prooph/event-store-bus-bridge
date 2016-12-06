@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStoreBusBridge;
 
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
@@ -23,7 +24,7 @@ use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
 
-class EventPublisherTest extends \PHPUnit_Framework_TestCase
+class EventPublisherTest extends TestCase
 {
     /**
      * @var InMemoryEventStore

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStoreBusBridge;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\EventStore\ActionEventEmitterEventStore;

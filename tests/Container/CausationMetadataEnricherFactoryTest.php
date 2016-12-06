@@ -13,13 +13,14 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
+use PHPUnit\Framework\TestCase;
 use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
 use Prooph\EventStoreBusBridge\Container\CausationMetadataEnricherFactory;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\CommandBus;
 use Prophecy\Argument;
 
-class CausationMetadataEnricherFactoryTest extends \PHPUnit_Framework_TestCase
+class CausationMetadataEnricherFactoryTest extends TestCase
 {
     /**
      * @test

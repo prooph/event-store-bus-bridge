@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStoreBusBridge;
 
+use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
@@ -22,7 +23,7 @@ use Prooph\ServiceBus\Exception\MessageDispatchException;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
 use Prophecy\Prophecy\ObjectProphecy;
 
-class TransactionManagerTest extends \PHPUnit_Framework_TestCase
+class TransactionManagerTest extends TestCase
 {
     /**
      * @test
