@@ -12,16 +12,16 @@ declare(strict_types=1);
 namespace Prooph\EventStoreBusBridge\Container;
 
 use Interop\Container\ContainerInterface;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
-use Prooph\ServiceBus\CommandBus;
 
 final class TransactionManagerFactory
 {
     /**
      * @var string
      */
-    private $commandBusServiceName;
+    private $eventStoreServiceName;
 
     /**
      * Creates a new instance from a specified config, specifically meant to be used as static factory.
@@ -49,19 +49,13 @@ final class TransactionManagerFactory
         return (new static($name))->__invoke($arguments[0]);
     }
 
-    public function __construct(string $commandBusServiceName = CommandBus::class)
+    public function __construct(string $eventStoreServiceName = EventStore::class)
     {
-        $this->commandBusServiceName = $commandBusServiceName;
+        $this->eventStoreServiceName = $eventStoreServiceName;
     }
 
     public function __invoke(ContainerInterface $container): TransactionManager
     {
-        $commandBus = $container->get($this->commandBusServiceName);
-
-        $transactionManager = new TransactionManager();
-
-        $commandBus->utilize($transactionManager);
-
-        return $transactionManager;
+        return new TransactionManager($container->get($this->eventStoreServiceName));
     }
 }

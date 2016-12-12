@@ -13,15 +13,13 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge;
 
 use PHPUnit\Framework\TestCase;
-use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\EventStore\EventStore;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
+use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prooph\ServiceBus\Exception\MessageDispatchException;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
-use Prophecy\Prophecy\ObjectProphecy;
 
 class TransactionManagerTest extends TestCase
 {
@@ -30,15 +28,13 @@ class TransactionManagerTest extends TestCase
      */
     public function it_handles_transactions(): void
     {
-        $eventStore = $this->getEventStoreObjectProphecy();
+        $eventStore = $this->prophesize(TransactionalEventStore::class);
 
         $eventStore->beginTransaction()->shouldBeCalled();
-        $eventStore->isInTransaction()->willReturn(true)->shouldBeCalled();
+        $eventStore->inTransaction()->willReturn(true)->shouldBeCalled();
         $eventStore->commit()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStore->reveal());
+        $transactionManager = new TransactionManager($eventStore->reveal());
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -56,15 +52,13 @@ class TransactionManagerTest extends TestCase
      */
     public function it_rolls_back_transactions(): void
     {
-        $eventStore = $this->getEventStoreObjectProphecy();
+        $eventStore = $this->prophesize(TransactionalEventStore::class);
 
         $eventStore->beginTransaction()->shouldBeCalled();
-        $eventStore->isInTransaction()->willReturn(true)->shouldBeCalled();
+        $eventStore->inTransaction()->willReturn(true)->shouldBeCalled();
         $eventStore->rollback()->shouldBeCalled();
 
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStore->reveal());
+        $transactionManager = new TransactionManager($eventStore->reveal());
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -90,23 +84,12 @@ class TransactionManagerTest extends TestCase
     /**
      * @test
      */
-    public function it_throws_exception_when_non_can_control_transaction_action_event_emitter_aware_event_store_passed(): void
+    public function it_throws_exception_when_non_transactional_event_store_passed(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
         $eventStore = $this->prophesize(EventStore::class);
 
-        $transactionManager = new TransactionManager();
-
-        $transactionManager->setUp($eventStore->reveal());
-    }
-
-    private function getEventStoreObjectProphecy(): ObjectProphecy
-    {
-        $eventStore = $this->prophesize(TransactionalActionEventEmitterEventStore::class);
-
-        $eventStore->getActionEventEmitter()->willReturn(new ProophActionEventEmitter());
-
-        return $eventStore;
+        new TransactionManager($eventStore->reveal());
     }
 }
