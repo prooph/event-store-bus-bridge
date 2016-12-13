@@ -13,9 +13,7 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge;
 
 use PHPUnit\Framework\TestCase;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStore\TransactionalEventStore;
-use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prooph\ServiceBus\Exception\MessageDispatchException;
@@ -79,17 +77,5 @@ class TransactionManagerTest extends TestCase
         }
 
         $this->fail('No exception thrown');
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_non_transactional_event_store_passed(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $eventStore = $this->prophesize(EventStore::class);
-
-        new TransactionManager($eventStore->reveal());
     }
 }
