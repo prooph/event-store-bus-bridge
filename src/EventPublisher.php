@@ -14,10 +14,8 @@ namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
 use Prooph\EventStore\ActionEventEmitterEventStore;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
-use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
 
 final class EventPublisher implements Plugin
@@ -37,18 +35,11 @@ final class EventPublisher implements Plugin
         $this->eventBus = $eventBus;
     }
 
-    public function setUp(EventStore $eventStore): void
+    public function setUp(ActionEventEmitterEventStore $eventStore): void
     {
-        if (! $eventStore instanceof ActionEventEmitterEventStore) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'EventStore must implement %s',
-                    ActionEventEmitterEventStore::class
-                )
-            );
-        }
+        $eventEmitter = $eventStore->getActionEventEmitter();
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventEmitter->attachListener(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use ($eventStore): void {
                 $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
@@ -62,7 +53,7 @@ final class EventPublisher implements Plugin
                 }
             }
         );
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventEmitter->attachListener(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use ($eventStore): void {
                 $stream = $event->getParam('stream');
@@ -79,7 +70,7 @@ final class EventPublisher implements Plugin
         );
 
         if ($eventStore instanceof TransactionalActionEventEmitterEventStore) {
-            $eventStore->getActionEventEmitter()->attachListener(
+            $eventEmitter->attachListener(
                 TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
                 function (ActionEvent $event): void {
                     foreach ($this->cachedEventStreams as $stream) {
@@ -90,7 +81,7 @@ final class EventPublisher implements Plugin
                     $this->cachedEventStreams = [];
                 }
             );
-            $eventStore->getActionEventEmitter()->attachListener(
+            $eventEmitter->attachListener(
                 TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
                 function (ActionEvent $event): void {
                     $this->cachedEventStreams = [];

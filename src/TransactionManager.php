@@ -16,10 +16,7 @@ use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ActionEventEmitter;
 use Prooph\Common\Event\ActionEventListenerAggregate;
 use Prooph\Common\Event\DetachAggregateHandlers;
-use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Plugin\Plugin;
-use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
-use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
+use Prooph\EventStore\TransactionalEventStore;
 use Prooph\ServiceBus\CommandBus;
 
 /**
@@ -32,33 +29,24 @@ use Prooph\ServiceBus\CommandBus;
  *
  * @package Prooph\EventStoreBusBridge
  */
-final class TransactionManager implements Plugin, ActionEventListenerAggregate
+final class TransactionManager implements ActionEventListenerAggregate
 {
     use DetachAggregateHandlers;
 
     /**
-     * @var TransactionalActionEventEmitterEventStore
+     * @var TransactionalEventStore
      */
     private $eventStore;
 
-    public function setUp(EventStore $eventStore): void
+    public function __construct(TransactionalEventStore $eventStore)
     {
-        if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'EventStore must implement %s',
-                    TransactionalActionEventEmitterEventStore::class
-                )
-            );
-        }
-
         $this->eventStore = $eventStore;
     }
 
-    public function attach(ActionEventEmitter $emitter): void
+    public function attach(ActionEventEmitter $eventEmitter): void
     {
         $this->trackHandler(
-            $emitter->attachListener(
+            $eventEmitter->attachListener(
                 CommandBus::EVENT_DISPATCH,
                 function (ActionEvent $event): void {
                     $this->eventStore->beginTransaction();
@@ -68,10 +56,10 @@ final class TransactionManager implements Plugin, ActionEventListenerAggregate
         );
 
         $this->trackHandler(
-            $emitter->attachListener(
+            $eventEmitter->attachListener(
                 CommandBus::EVENT_FINALIZE,
                 function (ActionEvent $event): void {
-                    if ($this->eventStore->isInTransaction()) {
+                    if ($this->eventStore->inTransaction()) {
                         if ($event->getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
                             $this->eventStore->rollback();
                         } else {

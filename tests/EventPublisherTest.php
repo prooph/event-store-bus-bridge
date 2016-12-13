@@ -16,24 +16,25 @@ use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\InMemoryEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStoreBusBridge\EventPublisher;
-use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
 
 class EventPublisherTest extends TestCase
 {
     /**
-     * @var InMemoryEventStore
+     * @var ActionEventEmitterEventStore
      */
     private $eventStore;
 
     protected function setUp(): void
     {
-        $this->eventStore = new InMemoryEventStore(new ProophActionEventEmitter());
+        $this->eventStore = new TransactionalActionEventEmitterEventStore(new InMemoryEventStore(), new ProophActionEventEmitter());
     }
 
     /**
@@ -121,18 +122,5 @@ class EventPublisherTest extends TestCase
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
         $this->eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]));
         $this->eventStore->rollback();
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_event_store_not_implementing_action_event_emitter_aware_is_used(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $eventStore = $this->prophesize(EventStore::class);
-
-        $eventPublisher = new EventPublisher($this->prophesize(EventBus::class)->reveal());
-        $eventPublisher->setUp($eventStore->reveal());
     }
 }

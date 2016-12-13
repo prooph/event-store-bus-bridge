@@ -19,11 +19,9 @@ use Prooph\Common\Event\ActionEventListenerAggregate;
 use Prooph\Common\Event\DetachAggregateHandlers;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\ActionEventEmitterEventStore;
-use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Metadata\MetadataEnricher;
 use Prooph\EventStore\Plugin\Plugin;
 use Prooph\EventStore\Stream;
-use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\CommandBus;
 
 final class CausationMetadataEnricher implements ActionEventListenerAggregate, MetadataEnricher, Plugin
@@ -35,18 +33,11 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
      */
     private $currentCommand;
 
-    public function setUp(EventStore $eventStore): void
+    public function setUp(ActionEventEmitterEventStore $eventStore): void
     {
-        if (! $eventStore instanceof ActionEventEmitterEventStore) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'EventStore must implement %s',
-                    ActionEventEmitterEventStore::class
-                )
-            );
-        }
+        $eventEmitter = $eventStore->getActionEventEmitter();
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventEmitter->attachListener(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event): void {
                 if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
@@ -66,7 +57,7 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
             1000
         );
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventEmitter->attachListener(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event): void {
                 if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
@@ -94,10 +85,10 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
         );
     }
 
-    public function attach(ActionEventEmitter $emitter): void
+    public function attach(ActionEventEmitter $eventEmitter): void
     {
         $this->trackHandler(
-            $emitter->attachListener(
+            $eventEmitter->attachListener(
                 CommandBus::EVENT_DISPATCH,
                 function (ActionEvent $event): void {
                     $this->currentCommand = $event->getParam(CommandBus::EVENT_PARAM_MESSAGE);
@@ -107,7 +98,7 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
         );
 
         $this->trackHandler(
-            $emitter->attachListener(
+            $eventEmitter->attachListener(
                 CommandBus::EVENT_FINALIZE,
                 function (ActionEvent $event): void {
                     $this->currentCommand = null;

@@ -21,7 +21,6 @@ use Prooph\EventStore\InMemoryEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
 use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
-use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\CommandBus;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
 use ProophTest\ServiceBus\Mock\DoSomething;
@@ -29,20 +28,6 @@ use ProophTest\ServiceBus\Mock\SomethingDone;
 
 class CausationMetadataEnricherTest extends TestCase
 {
-    /**
-     * @test
-     */
-    public function it_throws_exception_when_non_action_event_emitter_aware_event_store_passed(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $eventStore = $this->prophesize(EventStore::class);
-
-        $causationMetadataEnricher = new CausationMetadataEnricher();
-
-        $causationMetadataEnricher->setUp($eventStore->reveal());
-    }
-
     /**
      * @test
      */
@@ -407,8 +392,8 @@ class CausationMetadataEnricherTest extends TestCase
         $commandBus->dispatch($command);
     }
 
-    private function getEventStore(): InMemoryEventStore
+    private function getEventStore(): ActionEventEmitterEventStore
     {
-        return new InMemoryEventStore(new ProophActionEventEmitter());
+        return new ActionEventEmitterEventStore(new InMemoryEventStore(), new ProophActionEventEmitter());
     }
 }
