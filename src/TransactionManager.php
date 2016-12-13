@@ -20,14 +20,10 @@ use Prooph\EventStore\TransactionalEventStore;
 use Prooph\ServiceBus\CommandBus;
 
 /**
- * TransactionManager
- *
  * The transaction manager starts a new transaction when a command is dispatched on the command bus.
  * If the command dispatch finishes without an error the transaction manager commits the transaction otherwise it does a rollback.
  * Furthermore it attaches a listener to the event store create.pre and appendTo.pre action events with a low priority to
  * set causation_id as metadata for all domain events which are going to be persisted.
- *
- * @package Prooph\EventStoreBusBridge
  */
 final class TransactionManager implements ActionEventListenerAggregate
 {
