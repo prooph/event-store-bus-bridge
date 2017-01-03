@@ -37,7 +37,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $causationMetadataEnricher->setUp($eventStore);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -55,7 +55,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $result = null;
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
@@ -64,8 +64,8 @@ class CausationMetadataEnricherTest extends TestCase
             -1000
         );
 
-        $commandBus->utilize($router);
-        $commandBus->utilize($causationMetadataEnricher);
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         $command = new DoSomething(['name' => 'Alex'], 1);
 
@@ -94,7 +94,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $causationMetadataEnricher->setUp($eventStore);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -110,7 +110,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $result = null;
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use (&$result): void {
                 $streamEvents = $event->getParam('streamEvents');
@@ -120,8 +120,8 @@ class CausationMetadataEnricherTest extends TestCase
             -1000
         );
 
-        $commandBus->utilize($router);
-        $commandBus->utilize($causationMetadataEnricher);
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         $command = new DoSomething(['name' => 'Alex'], 1);
 
@@ -143,7 +143,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $causationMetadataEnricher->setUp($eventStore);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -161,7 +161,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $result = null;
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
@@ -170,12 +170,12 @@ class CausationMetadataEnricherTest extends TestCase
             -1000
         );
 
-        $commandBus->utilize($router);
-        $commandBus->utilize($causationMetadataEnricher);
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         $command = new DoSomething(['name' => 'Alex'], 1);
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
@@ -183,13 +183,63 @@ class CausationMetadataEnricherTest extends TestCase
             CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
             CommandBus::PRIORITY_INVOKE_HANDLER + 500
         );
+
+        $commandBus->dispatch($command);
+
+        $this->assertArrayNotHasKey('_causation_id', $result->metadata());
+        $this->assertArrayNotHasKey('_causation_name', $result->metadata());
+    }
+
+    /**
+     * @test
+     */
+    public function it_detaches_from_command_bus_and_event_store(): void
+    {
+        $eventStore = $this->getEventStore();
+
+        $causationMetadataEnricher = new CausationMetadataEnricher();
+
+        $causationMetadataEnricher->attachToEventStore($eventStore);
+
+        $commandBus = new CommandBus();
+        $router = new CommandRouter();
+        $router->route(DoSomething::class)->to(function (DoSomething $command) use ($eventStore): void {
+            /* @var EventStore $eventStore */
+            $eventStore->create(
+                new Stream(
+                    new StreamName('something'),
+                    new \ArrayIterator([
+                        new SomethingDone(['name' => $command->payload('name')]),
+                    ])
+                )
+            );
+        });
+
+        $result = null;
+
+        $eventStore->attach(
+            ActionEventEmitterEventStore::EVENT_CREATE,
+            function (ActionEvent $event) use (&$result): void {
+                $stream = $event->getParam('stream');
+                $result = $stream->streamEvents()->current();
+            },
+            -1000
+        );
+
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
+
+        $causationMetadataEnricher->detachFromEventStore($eventStore);
+        $causationMetadataEnricher->detachFromMessageBus($commandBus);
+
+        $command = new DoSomething(['name' => 'Alex'], 1);
 
         $commandBus->dispatch($command);
 
@@ -213,7 +263,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $causationMetadataEnricher->setUp($eventStore);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -229,7 +279,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $result = null;
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use (&$result): void {
                 $streamEvents = $event->getParam('streamEvents');
@@ -239,12 +289,12 @@ class CausationMetadataEnricherTest extends TestCase
             -1000
         );
 
-        $commandBus->utilize($router);
-        $commandBus->utilize($causationMetadataEnricher);
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         $command = new DoSomething(['name' => 'Alex'], 1);
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
@@ -252,7 +302,7 @@ class CausationMetadataEnricherTest extends TestCase
             CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
@@ -275,7 +325,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $causationMetadataEnricher->setUp($eventStore);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -293,7 +343,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $result = null;
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
@@ -302,12 +352,12 @@ class CausationMetadataEnricherTest extends TestCase
             -1000
         );
 
-        $commandBus->utilize($router);
-        $commandBus->utilize($causationMetadataEnricher);
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         $command = 'do something';
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
@@ -315,7 +365,7 @@ class CausationMetadataEnricherTest extends TestCase
             CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
@@ -342,7 +392,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $causationMetadataEnricher->setUp($eventStore);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
 
         $commandBus = new CommandBus();
         $router = new CommandRouter();
@@ -358,7 +408,7 @@ class CausationMetadataEnricherTest extends TestCase
 
         $result = null;
 
-        $eventStore->getActionEventEmitter()->attachListener(
+        $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event) use (&$result): void {
                 $streamEvents = $event->getParam('streamEvents');
@@ -368,12 +418,12 @@ class CausationMetadataEnricherTest extends TestCase
             -1000
         );
 
-        $commandBus->utilize($router);
-        $commandBus->utilize($causationMetadataEnricher);
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         $command = 'do something';
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
@@ -381,7 +431,7 @@ class CausationMetadataEnricherTest extends TestCase
             CommandBus::PRIORITY_INVOKE_HANDLER + 2000
         );
 
-        $commandBus->getActionEventEmitter()->attachListener(
+        $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);

@@ -29,7 +29,7 @@ class CausationMetadataEnricherFactoryTest extends TestCase
     {
         $commandBus = $this->prophesize(CommandBus::class);
 
-        $commandBus->utilize(Argument::type(CausationMetadataEnricher::class))->shouldBeCalled();
+        $commandBus->attach(Argument::any(), Argument::any(), Argument::any())->shouldBeCalled();
 
         $container = $this->prophesize(ContainerInterface::class);
 
@@ -49,7 +49,7 @@ class CausationMetadataEnricherFactoryTest extends TestCase
     {
         $commandBus = $this->prophesize(CommandBus::class);
 
-        $commandBus->utilize(Argument::type(CausationMetadataEnricher::class))->shouldBeCalled();
+        $commandBus->attach(Argument::any(), Argument::any(), Argument::any())->shouldBeCalled();
 
         $container = $this->prophesize(ContainerInterface::class);
 

@@ -14,30 +14,35 @@ namespace Prooph\EventStoreBusBridge;
 
 use ArrayIterator;
 use Prooph\Common\Event\ActionEvent;
-use Prooph\Common\Event\ActionEventEmitter;
-use Prooph\Common\Event\ActionEventListenerAggregate;
-use Prooph\Common\Event\DetachAggregateHandlers;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\Metadata\MetadataEnricher;
-use Prooph\EventStore\Plugin\Plugin;
+use Prooph\EventStore\Plugin\Plugin as EventStorePlugin;
 use Prooph\EventStore\Stream;
 use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\MessageBus;
+use Prooph\ServiceBus\Plugin\Plugin as MessageBusPlugin;
 
-final class CausationMetadataEnricher implements ActionEventListenerAggregate, MetadataEnricher, Plugin
+final class CausationMetadataEnricher implements MetadataEnricher, EventStorePlugin, MessageBusPlugin
 {
-    use DetachAggregateHandlers;
-
     /**
      * @var Message
      */
     private $currentCommand;
 
-    public function setUp(ActionEventEmitterEventStore $eventStore): void
-    {
-        $eventEmitter = $eventStore->getActionEventEmitter();
+    /**
+     * @var array
+     */
+    private $eventStoreListeners = [];
 
-        $eventEmitter->attachListener(
+    /**
+     * @var array
+     */
+    private $messageBusListeners = [];
+
+    public function attachToEventStore(ActionEventEmitterEventStore $eventStore): void
+    {
+        $this->eventStoreListeners[] = $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event): void {
                 if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
@@ -57,7 +62,7 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
             1000
         );
 
-        $eventEmitter->attachListener(
+        $this->eventStoreListeners[] = $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event): void {
                 if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
@@ -85,27 +90,41 @@ final class CausationMetadataEnricher implements ActionEventListenerAggregate, M
         );
     }
 
-    public function attach(ActionEventEmitter $eventEmitter): void
+    public function detachFromEventStore(ActionEventEmitterEventStore $eventStore): void
     {
-        $this->trackHandler(
-            $eventEmitter->attachListener(
-                CommandBus::EVENT_DISPATCH,
-                function (ActionEvent $event): void {
-                    $this->currentCommand = $event->getParam(CommandBus::EVENT_PARAM_MESSAGE);
-                },
-                CommandBus::PRIORITY_INVOKE_HANDLER + 1000
-            )
+        foreach ($this->eventStoreListeners as $listenerHandler) {
+            $eventStore->detach($listenerHandler);
+        }
+
+        $this->eventStoreListeners = [];
+    }
+
+    public function attachToMessageBus(MessageBus $messageBus): void
+    {
+        $this->messageBusListeners[] = $messageBus->attach(
+            CommandBus::EVENT_DISPATCH,
+            function (ActionEvent $event): void {
+                $this->currentCommand = $event->getParam(CommandBus::EVENT_PARAM_MESSAGE);
+            },
+            CommandBus::PRIORITY_INVOKE_HANDLER + 1000
         );
 
-        $this->trackHandler(
-            $eventEmitter->attachListener(
-                CommandBus::EVENT_FINALIZE,
-                function (ActionEvent $event): void {
-                    $this->currentCommand = null;
-                },
-                1000
-            )
+        $this->messageBusListeners[] = $messageBus->attach(
+            CommandBus::EVENT_FINALIZE,
+            function (ActionEvent $event): void {
+                $this->currentCommand = null;
+            },
+            1000
         );
+    }
+
+    public function detachFromMessageBus(MessageBus $messageBus): void
+    {
+        foreach ($this->messageBusListeners as $listenerHandler) {
+            $messageBus->detach($listenerHandler);
+        }
+
+        $this->messageBusListeners = [];
     }
 
     public function enrich(Message $message): Message

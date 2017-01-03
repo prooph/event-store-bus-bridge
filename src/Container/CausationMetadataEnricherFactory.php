@@ -60,7 +60,7 @@ final class CausationMetadataEnricherFactory
 
         $causationMetadataEnricher = new CausationMetadataEnricher();
 
-        $commandBus->utilize($causationMetadataEnricher);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
 
         return $causationMetadataEnricher;
     }

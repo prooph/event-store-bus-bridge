@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
-use Prooph\Common\Event\ActionEventEmitter;
-use Prooph\Common\Event\ActionEventListenerAggregate;
-use Prooph\Common\Event\DetachAggregateHandlers;
 use Prooph\EventStore\TransactionalEventStore;
 use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\MessageBus;
+use Prooph\ServiceBus\Plugin\AbstractPlugin;
 
 /**
  * The transaction manager starts a new transaction when a command is dispatched on the command bus.
@@ -25,10 +24,8 @@ use Prooph\ServiceBus\CommandBus;
  * Furthermore it attaches a listener to the event store create.pre and appendTo.pre action events with a low priority to
  * set causation_id as metadata for all domain events which are going to be persisted.
  */
-final class TransactionManager implements ActionEventListenerAggregate
+final class TransactionManager extends AbstractPlugin
 {
-    use DetachAggregateHandlers;
-
     /**
      * @var TransactionalEventStore
      */
@@ -39,32 +36,28 @@ final class TransactionManager implements ActionEventListenerAggregate
         $this->eventStore = $eventStore;
     }
 
-    public function attach(ActionEventEmitter $eventEmitter): void
+    public function attachToMessageBus(MessageBus $messageBus): void
     {
-        $this->trackHandler(
-            $eventEmitter->attachListener(
-                CommandBus::EVENT_DISPATCH,
-                function (ActionEvent $event): void {
-                    $this->eventStore->beginTransaction();
-                },
-                CommandBus::PRIORITY_INVOKE_HANDLER + 1000
-            )
+        $this->listenerHandlers[] = $messageBus->attach(
+            CommandBus::EVENT_DISPATCH,
+            function (ActionEvent $event): void {
+                $this->eventStore->beginTransaction();
+            },
+            CommandBus::PRIORITY_INVOKE_HANDLER + 1000
         );
 
-        $this->trackHandler(
-            $eventEmitter->attachListener(
-                CommandBus::EVENT_FINALIZE,
-                function (ActionEvent $event): void {
-                    if ($this->eventStore->inTransaction()) {
-                        if ($event->getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
-                            $this->eventStore->rollback();
-                        } else {
-                            $this->eventStore->commit();
-                        }
+        $this->listenerHandlers[] = $messageBus->attach(
+            CommandBus::EVENT_FINALIZE,
+            function (ActionEvent $event): void {
+                if ($this->eventStore->inTransaction()) {
+                    if ($event->getParam(CommandBus::EVENT_PARAM_EXCEPTION)) {
+                        $this->eventStore->rollback();
+                    } else {
+                        $this->eventStore->commit();
                     }
-                },
-                1000
-            )
+                }
+            },
+            1000
         );
     }
 }

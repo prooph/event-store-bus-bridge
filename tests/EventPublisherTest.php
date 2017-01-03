@@ -56,7 +56,7 @@ class EventPublisherTest extends TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $eventPublisher->setUp($this->eventStore);
+        $eventPublisher->attachToEventStore($this->eventStore);
 
         $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
@@ -83,7 +83,7 @@ class EventPublisherTest extends TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $eventPublisher->setUp($this->eventStore);
+        $eventPublisher->attachToEventStore($this->eventStore);
 
         $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
@@ -112,7 +112,7 @@ class EventPublisherTest extends TestCase
 
         $commitPostListener = null;
 
-        $eventPublisher->setUp($this->eventStore);
+        $eventPublisher->attachToEventStore($this->eventStore);
 
         $commitPostEvent = $this->prophesize(ActionEvent::class);
 
