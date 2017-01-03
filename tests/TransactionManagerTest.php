@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/event-store-bus-bridge.
- * (c) 2014-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2015-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2014-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2015-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -38,9 +38,10 @@ class TransactionManagerTest extends TestCase
         $router = new CommandRouter();
         $router->route('a message')->to(function () {
         });
-        $commandBus->utilize($router);
 
-        $transactionManager->attach($commandBus->getActionEventEmitter());
+        $router->attachToMessageBus($commandBus);
+
+        $transactionManager->attachToMessageBus($commandBus);
 
         $commandBus->dispatch('a message');
     }
@@ -63,9 +64,10 @@ class TransactionManagerTest extends TestCase
         $router->route('a message')->to(function () {
             throw new \RuntimeException('foo');
         });
-        $commandBus->utilize($router);
 
-        $transactionManager->attach($commandBus->getActionEventEmitter());
+        $router->attachToMessageBus($commandBus);
+
+        $transactionManager->attachToMessageBus($commandBus);
 
         try {
             $commandBus->dispatch('a message');

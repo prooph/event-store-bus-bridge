@@ -1,8 +1,8 @@
 <?php
 /**
  * This file is part of the prooph/event-store-bus-bridge.
- * (c) 2014-2016 prooph software GmbH <contact@prooph.de>
- * (c) 2015-2016 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
+ * (c) 2014-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2015-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -56,7 +56,7 @@ class EventPublisherTest extends TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $eventPublisher->setUp($this->eventStore);
+        $eventPublisher->attachToEventStore($this->eventStore);
 
         $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
@@ -83,7 +83,7 @@ class EventPublisherTest extends TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $eventPublisher->setUp($this->eventStore);
+        $eventPublisher->attachToEventStore($this->eventStore);
 
         $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
@@ -112,7 +112,7 @@ class EventPublisherTest extends TestCase
 
         $commitPostListener = null;
 
-        $eventPublisher->setUp($this->eventStore);
+        $eventPublisher->attachToEventStore($this->eventStore);
 
         $commitPostEvent = $this->prophesize(ActionEvent::class);
 
