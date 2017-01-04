@@ -51,6 +51,11 @@
             "ProophTest\\ServiceBus\\": "vendor/prooph/service-bus/tests/"
         }
     },
+    "config": {
+        "preferred-install": {
+            "prooph/*": "source"
+        }
+    },
     "scripts": {
         "check": [
             "@cs",
