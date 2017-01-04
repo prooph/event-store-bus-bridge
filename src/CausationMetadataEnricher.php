@@ -45,7 +45,7 @@ final class CausationMetadataEnricher implements MetadataEnricher, EventStorePlu
         $this->eventStoreListeners[] = $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_APPEND_TO,
             function (ActionEvent $event): void {
-                if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
+                if (! $this->currentCommand instanceof Message) {
                     return;
                 }
 
@@ -65,7 +65,7 @@ final class CausationMetadataEnricher implements MetadataEnricher, EventStorePlu
         $this->eventStoreListeners[] = $eventStore->attach(
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event): void {
-                if (null === $this->currentCommand || ! $this->currentCommand instanceof Message) {
+                if (! $this->currentCommand instanceof Message) {
                     return;
                 }
 
