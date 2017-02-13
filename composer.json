@@ -22,7 +22,7 @@
     ],
     "require": {
         "php": "^7.1",
-        "prooph/common" : "4.0.x-dev",
+        "prooph/common" : "^4.0.0",
         "prooph/service-bus" : "6.0.x-dev",
         "prooph/event-store" : "7.0.x-dev"
     },
