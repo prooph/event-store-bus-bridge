@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace Prooph\EventStoreBusBridge\Container;
 
-use Interop\Container\ContainerInterface;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
+use Psr\Container\ContainerInterface;
 
 final class TransactionManagerFactory
 {

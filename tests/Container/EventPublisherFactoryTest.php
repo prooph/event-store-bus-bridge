@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStoreBusBridge\Container;
 
-use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Prooph\EventStoreBusBridge\Container\EventPublisherFactory;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
+use Psr\Container\ContainerInterface;
 
 class EventPublisherFactoryTest extends TestCase
 {
