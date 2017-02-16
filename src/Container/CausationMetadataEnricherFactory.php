@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace Prooph\EventStoreBusBridge\Container;
 
-use Interop\Container\ContainerInterface;
 use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\CommandBus;
+use Psr\Container\ContainerInterface;
 
 final class CausationMetadataEnricherFactory
 {

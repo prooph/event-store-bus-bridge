@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace Prooph\EventStoreBusBridge\Container;
 
-use Interop\Container\ContainerInterface;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
+use Psr\Container\ContainerInterface;
 
 final class EventPublisherFactory
 {
