@@ -1,4 +1,4 @@
-# Prooph Event Store :link: Service Bus
+# Prooph Event Store Bus Bridge
 
 Marry CQRS with Event Sourcing
 
@@ -9,8 +9,10 @@ Marry CQRS with Event Sourcing
 This package acts as a glue component between [prooph/service-bus](https://github.com/prooph/service-bus) and [prooph/event-store](https://github.com/prooph/event-store).
 
 ## Features
+
 - [Transaction handling](docs/transaction_manager.md) based on command dispatch
 - [Event publishing](docs/event_publisher.md) after event store commit
+- [Causation Metadata Enricher](docs/causation_metadata_enricher.md) based on command dispatch & event-store create/appendTo
 
 ## Documentation
 

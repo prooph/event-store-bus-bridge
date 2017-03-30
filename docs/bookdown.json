@@ -3,8 +3,9 @@
   "content": [
     {"intro": "../README.md"},
     {"event_publisher": "event_publisher.md"},
-    {"transaction_manager": "transaction_manager.md"}
+    {"transaction_manager": "transaction_manager.md"},
+    {"causation_metadata_enricher": "causation_metadata_enricher.md"}
   ],
   "target": "./html",
-  "template": "../vendor/tobiju/bookdown-bootswatch-templates/templates/main.php"
+  "template": "../vendor/prooph/bookdown-template/templates/main.php"
 }
