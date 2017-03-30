@@ -2,11 +2,11 @@
 
 ## Set Up
 To enable transaction handling based on command dispatch you need to set up the `Prooph\EventStoreBusBridge\TransactionManager`.
-The transaction manager acts as command bus AND event store plugin so you need to attach it to both:
+The transaction manager acts as command bus plugin:
 
 ```php
 /** @var $eventStore Prooph\EventStore\EventStore */
-$transactionManager->setUp($eventStore);
+$transactionManager = new TransactionManager($eventStore);
 
 /** @var $commandBus Prooph\ServiceBus\CommandBus */
 $commandBus->utilize($transactionManager);

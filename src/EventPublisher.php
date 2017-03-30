@@ -1,29 +1,24 @@
 <?php
-/*
+/**
  * This file is part of the prooph/event-store-bus-bridge.
- * (c) 2014-2015 prooph software GmbH <contact@prooph.de>
+ * (c) 2014-2017 prooph software GmbH <contact@prooph.de>
+ * (c) 2015-2017 Sascha-Oliver Prolic <saschaprolic@googlemail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
- *
- * Date: 8/30/15 - 5:46 PM
  */
+
+declare(strict_types=1);
+
 namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
-use Prooph\EventStore\EventStore;
-use Prooph\EventStore\Plugin\Plugin;
+use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\Plugin\AbstractPlugin;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\ServiceBus\EventBus;
 
-/**
- * Class EventPublisher
- *
- * The EventPublisher listens on event store commit.post events
- * and publishes all recorded events on the event bus
- *
- * @package Prooph\EventStoreBusBridge
- */
-final class EventPublisher implements Plugin
+final class EventPublisher extends AbstractPlugin
 {
     /**
      * @var EventBus
@@ -31,33 +26,67 @@ final class EventPublisher implements Plugin
     private $eventBus;
 
     /**
-     * @param \Prooph\ServiceBus\EventBus $eventBus
+     * @var \Iterator[]
      */
+    private $cachedEventStreams = [];
+
     public function __construct(EventBus $eventBus)
     {
         $this->eventBus = $eventBus;
     }
 
-    /**
-     * @param EventStore $eventStore
-     * @return void
-     */
-    public function setUp(EventStore $eventStore)
+    public function attachToEventStore(ActionEventEmitterEventStore $eventStore): void
     {
-        $eventStore->getActionEventEmitter()->attachListener('commit.post', [$this, 'onEventStoreCommitPost']);
-    }
+        $this->listenerHandlers[] = $eventStore->attach(
+            ActionEventEmitterEventStore::EVENT_APPEND_TO,
+            function (ActionEvent $event) use ($eventStore): void {
+                $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
 
-    /**
-     * Publish recorded events on the event bus
-     *
-     * @param ActionEvent $actionEvent
-     */
-    public function onEventStoreCommitPost(ActionEvent $actionEvent)
-    {
-        $recordedEvents = $actionEvent->getParam('recordedEvents', new \ArrayIterator());
+                if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
+                    foreach ($recordedEvents as $recordedEvent) {
+                        $this->eventBus->dispatch($recordedEvent);
+                    }
+                } else {
+                    $this->cachedEventStreams[] = $recordedEvents;
+                }
+            }
+        );
 
-        foreach ($recordedEvents as $recordedEvent) {
-            $this->eventBus->dispatch($recordedEvent);
+        $this->listenerHandlers[] = $eventStore->attach(
+            ActionEventEmitterEventStore::EVENT_CREATE,
+            function (ActionEvent $event) use ($eventStore): void {
+                $stream = $event->getParam('stream');
+                $recordedEvents = $stream->streamEvents();
+
+                if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
+                    foreach ($recordedEvents as $recordedEvent) {
+                        $this->eventBus->dispatch($recordedEvent);
+                    }
+                } else {
+                    $this->cachedEventStreams[] = $recordedEvents;
+                }
+            }
+        );
+
+        if ($eventStore instanceof TransactionalActionEventEmitterEventStore) {
+            $this->listenerHandlers[] = $eventStore->attach(
+                TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
+                function (ActionEvent $event): void {
+                    foreach ($this->cachedEventStreams as $stream) {
+                        foreach ($stream as $recordedEvent) {
+                            $this->eventBus->dispatch($recordedEvent);
+                        }
+                    }
+                    $this->cachedEventStreams = [];
+                }
+            );
+
+            $this->listenerHandlers[] = $eventStore->attach(
+                TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
+                function (ActionEvent $event): void {
+                    $this->cachedEventStreams = [];
+                }
+            );
         }
     }
 }

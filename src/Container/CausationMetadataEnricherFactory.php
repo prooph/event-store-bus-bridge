@@ -7,22 +7,21 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 declare(strict_types=1);
 
 namespace Prooph\EventStoreBusBridge\Container;
 
-use Prooph\EventStoreBusBridge\EventPublisher;
+use Prooph\EventStoreBusBridge\CausationMetadataEnricher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
-use Prooph\ServiceBus\EventBus;
+use Prooph\ServiceBus\CommandBus;
 use Psr\Container\ContainerInterface;
 
-final class EventPublisherFactory
+final class CausationMetadataEnricherFactory
 {
     /**
      * @var string
      */
-    private $eventBusServiceName;
+    private $commandBusServiceName;
 
     /**
      * Creates a new instance from a specified config, specifically meant to be used as static factory.
@@ -33,13 +32,13 @@ final class EventPublisherFactory
      * <code>
      * <?php
      * return [
-     *     EventPublisher::class => [EventPublisherFactory::class, 'event_bus_service_name'],
+     *     CausationMetadataEnricher::class => [CausationMetadataEnricherFactory::class, 'command_bus_service_name'],
      * ];
      * </code>
      *
      * @throws InvalidArgumentException
      */
-    public static function __callStatic(string $name, array $arguments): EventPublisher
+    public static function __callStatic(string $name, array $arguments): CausationMetadataEnricher
     {
         if (! isset($arguments[0]) || ! $arguments[0] instanceof ContainerInterface) {
             throw new InvalidArgumentException(
@@ -50,15 +49,19 @@ final class EventPublisherFactory
         return (new static($name))->__invoke($arguments[0]);
     }
 
-    public function __construct(string $eventBusServiceName = EventBus::class)
+    public function __construct(string $commandBusServiceName = CommandBus::class)
     {
-        $this->eventBusServiceName = $eventBusServiceName;
+        $this->commandBusServiceName = $commandBusServiceName;
     }
 
-    public function __invoke(ContainerInterface $container): EventPublisher
+    public function __invoke(ContainerInterface $container): CausationMetadataEnricher
     {
-        $eventBus = $container->get($this->eventBusServiceName);
+        $commandBus = $container->get($this->commandBusServiceName);
 
-        return new EventPublisher($eventBus);
+        $causationMetadataEnricher = new CausationMetadataEnricher();
+
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
+
+        return $causationMetadataEnricher;
     }
 }
