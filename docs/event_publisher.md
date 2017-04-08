@@ -1,7 +1,8 @@
 # Event Publishing
 
-The `Prooph\EventStoreBusBridge\EventPublisher` is an event store plugin which listens on the event store `commit.post` action event.
-It iterates over the `recordedEvents` and publishes each on the `Prooph\ServiceBus\EventBus`.
+The `Prooph\EventStoreBusBridge\EventPublisher` is an event store plugin which listens on the event store `create`,
+`appendTo` and `commit` action event.
+It iterates over the `recordedEvents` and publishes them on the `Prooph\ServiceBus\EventBus`.
 
 ## Set Up
 
