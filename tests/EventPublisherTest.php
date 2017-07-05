@@ -121,7 +121,6 @@ class EventPublisherTest extends TestCase
 
     /**
      * @test
-     * @group by
      */
     public function it_does_not_publish_when_non_transactional_event_store_throws_exception(): void
     {
