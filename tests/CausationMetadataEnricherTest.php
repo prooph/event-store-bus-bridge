@@ -15,6 +15,7 @@ namespace ProophTest\EventStoreBusBridge;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
+use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\InMemoryEventStore;
@@ -359,14 +360,6 @@ class CausationMetadataEnricherTest extends TestCase
 
         $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
-            function (ActionEvent $event): void {
-                $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
-            },
-            CommandBus::PRIORITY_INVOKE_HANDLER + 2000
-        );
-
-        $commandBus->attach(
-            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
@@ -374,6 +367,10 @@ class CausationMetadataEnricherTest extends TestCase
         );
 
         $commandBus->dispatch($command);
+
+        $this->assertInstanceOf(Message::class, $result);
+        $this->assertArrayNotHasKey('_causation_id', $result->metadata());
+        $this->assertArrayNotHasKey('_causation_', $result->metadata());
     }
 
     /**
@@ -425,14 +422,6 @@ class CausationMetadataEnricherTest extends TestCase
 
         $commandBus->attach(
             CommandBus::EVENT_DISPATCH,
-            function (ActionEvent $event): void {
-                $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, null);
-            },
-            CommandBus::PRIORITY_INVOKE_HANDLER + 2000
-        );
-
-        $commandBus->attach(
-            CommandBus::EVENT_DISPATCH,
             function (ActionEvent $event) use ($command): void {
                 $event->setParam(CommandBus::EVENT_PARAM_MESSAGE, $command);
             },
@@ -440,6 +429,10 @@ class CausationMetadataEnricherTest extends TestCase
         );
 
         $commandBus->dispatch($command);
+
+        $this->assertInstanceOf(Message::class, $result);
+        $this->assertArrayNotHasKey('_causation_id', $result->metadata());
+        $this->assertArrayNotHasKey('_causation_', $result->metadata());
     }
 
     private function getEventStore(): ActionEventEmitterEventStore

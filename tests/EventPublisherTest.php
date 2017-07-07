@@ -19,6 +19,7 @@ use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Exception\ConcurrencyException;
 use Prooph\EventStore\Exception\StreamExistsAlready;
+use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\InMemoryEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -132,6 +133,7 @@ class EventPublisherTest extends TestCase
         $eventStore = $this->prophesize(EventStore::class);
         $eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])))->willThrow(StreamExistsAlready::with(new StreamName('test')))->shouldBeCalled();
         $eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]))->willThrow(new ConcurrencyException())->shouldBeCalled();
+        $eventStore->appendTo(new StreamName('unknown'), new \ArrayIterator([$event3, $event4]))->willThrow(StreamNotFound::with(new StreamName('unknown')))->shouldBeCalled();
 
         $eventStore = new ActionEventEmitterEventStore($eventStore->reveal(), new ProophActionEventEmitter());
 
@@ -154,6 +156,12 @@ class EventPublisherTest extends TestCase
 
         try {
             $eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]));
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        try {
+            $eventStore->appendTo(new StreamName('unknown'), new \ArrayIterator([$event3, $event4]));
         } catch (\Throwable $e) {
             // ignore
         }
