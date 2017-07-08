@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace ProophTest\EventStoreBusBridge;
 
 use PHPUnit\Framework\TestCase;
-use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\ActionEventEmitterEventStore;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Exception\ConcurrencyException;
+use Prooph\EventStore\Exception\StreamExistsAlready;
+use Prooph\EventStore\Exception\StreamNotFound;
 use Prooph\EventStore\InMemoryEventStore;
 use Prooph\EventStore\Stream;
 use Prooph\EventStore\StreamName;
@@ -110,17 +112,58 @@ class EventPublisherTest extends TestCase
 
         $eventPublisher = new EventPublisher($eventBus->reveal());
 
-        $commitPostListener = null;
-
         $eventPublisher->attachToEventStore($this->eventStore);
-
-        $commitPostEvent = $this->prophesize(ActionEvent::class);
-
-        $commitPostEvent->getParam('recordedEvents', new \ArrayIterator())->willReturn([$event1, $event2]);
 
         $this->eventStore->beginTransaction();
         $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
         $this->eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]));
         $this->eventStore->rollback();
+    }
+
+    /**
+     * @test
+     */
+    public function it_does_not_publish_when_non_transactional_event_store_throws_exception(): void
+    {
+        $event1 = $this->prophesize(Message::class)->reveal();
+        $event2 = $this->prophesize(Message::class)->reveal();
+        $event3 = $this->prophesize(Message::class)->reveal();
+        $event4 = $this->prophesize(Message::class)->reveal();
+
+        $eventStore = $this->prophesize(EventStore::class);
+        $eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])))->willThrow(StreamExistsAlready::with(new StreamName('test')))->shouldBeCalled();
+        $eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]))->willThrow(new ConcurrencyException())->shouldBeCalled();
+        $eventStore->appendTo(new StreamName('unknown'), new \ArrayIterator([$event3, $event4]))->willThrow(StreamNotFound::with(new StreamName('unknown')))->shouldBeCalled();
+
+        $eventStore = new ActionEventEmitterEventStore($eventStore->reveal(), new ProophActionEventEmitter());
+
+        $eventBus = $this->prophesize(EventBus::class);
+
+        $eventBus->dispatch($event1)->shouldNotBeCalled();
+        $eventBus->dispatch($event2)->shouldNotBeCalled();
+        $eventBus->dispatch($event3)->shouldNotBeCalled();
+        $eventBus->dispatch($event4)->shouldNotBeCalled();
+
+        $eventPublisher = new EventPublisher($eventBus->reveal());
+
+        $eventPublisher->attachToEventStore($eventStore);
+
+        try {
+            $eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        try {
+            $eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]));
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        try {
+            $eventStore->appendTo(new StreamName('unknown'), new \ArrayIterator([$event3, $event4]));
+        } catch (\Throwable $e) {
+            // ignore
+        }
     }
 }
