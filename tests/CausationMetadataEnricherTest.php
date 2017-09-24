@@ -60,6 +60,7 @@ class CausationMetadataEnricherTest extends TestCase
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
+                $stream->streamEvents()->rewind();
                 $result = $stream->streamEvents()->current();
             },
             -1000
@@ -166,6 +167,7 @@ class CausationMetadataEnricherTest extends TestCase
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
+                $stream->streamEvents()->rewind();
                 $result = $stream->streamEvents()->current();
             },
             -1000
@@ -229,6 +231,7 @@ class CausationMetadataEnricherTest extends TestCase
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
+                $stream->streamEvents()->rewind();
                 $result = $stream->streamEvents()->current();
             },
             -1000
@@ -240,7 +243,7 @@ class CausationMetadataEnricherTest extends TestCase
         $causationMetadataEnricher->detachFromEventStore($eventStore);
         $causationMetadataEnricher->detachFromMessageBus($commandBus);
 
-        $command = new DoSomething(['name' => 'Alex'], 1);
+        $command = new DoSomething(['name' => 'Alex']);
 
         $commandBus->dispatch($command);
 
@@ -348,6 +351,7 @@ class CausationMetadataEnricherTest extends TestCase
             ActionEventEmitterEventStore::EVENT_CREATE,
             function (ActionEvent $event) use (&$result): void {
                 $stream = $event->getParam('stream');
+                $stream->streamEvents()->rewind();
                 $result = $stream->streamEvents()->current();
             },
             -1000

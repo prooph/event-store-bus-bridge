@@ -22,4 +22,5 @@ That's it!
 If you are using the `container-aware factories` shipped with prooph/event-store and prooph/service-bus you may also
 want to auto register the `CausationMetadataEnricher`.
 
-Add the `CausationMetadataEnricher` as plugin to the command bus as well as the event-store. Use the `CausationMetadataEnricherFactory`. 
+Add the `CausationMetadataEnricher` as plugin to the command bus as well as the event-store.
+Keep in mind, that this service must be shared in order to work (which it is by default in most container implementations). 
