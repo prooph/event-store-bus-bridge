@@ -1,7 +1,30 @@
 # Change Log
 
-## [v3.0.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.0.0)
+## [v3.0.2](https://github.com/prooph/event-store-bus-bridge/tree/v3.0.2)
 
+[Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.0.1...v3.0.2)
+
+**Fixed bugs:**
+
+- fix causation meta data enricher docs, remove useless factory [\#34](https://github.com/prooph/event-store-bus-bridge/pull/34) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- CausationMetadataEnricher not invoked when command bus is created before event store [\#32](https://github.com/prooph/event-store-bus-bridge/issues/32)
+
+## [v3.0.1](https://github.com/prooph/event-store-bus-bridge/tree/v3.0.1) (2017-07-08)
+[Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.0.0...v3.0.1)
+
+**Fixed bugs:**
+
+- EventPublisher should not publish events if event contains errors / e… [\#31](https://github.com/prooph/event-store-bus-bridge/pull/31) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- EventPublisher should not publish events if event contains errors / exceptions  [\#30](https://github.com/prooph/event-store-bus-bridge/issues/30)
+- TransactionManager breaks on non found aggregates [\#29](https://github.com/prooph/event-store-bus-bridge/issues/29)
+
+## [v3.0.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.0.0) (2017-03-30)
 [Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.0.0-beta2...v3.0.0)
 
 **Merged pull requests:**
