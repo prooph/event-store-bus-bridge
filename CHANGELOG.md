@@ -1,7 +1,18 @@
 # Change Log
 
-## [v3.0.2](https://github.com/prooph/event-store-bus-bridge/tree/v3.0.2)
+## [v3.1.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.1.0)
 
+[Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.0.2...v3.1.0)
+
+**Implemented enhancements:**
+
+- test php 7.2 on travis [\#36](https://github.com/prooph/event-store-bus-bridge/pull/36) ([prolic](https://github.com/prolic))
+
+**Closed issues:**
+
+- 3.0.2 Release is a BC-Break [\#35](https://github.com/prooph/event-store-bus-bridge/issues/35)
+
+## [v3.0.2](https://github.com/prooph/event-store-bus-bridge/tree/v3.0.2) (2017-09-25)
 [Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.0.1...v3.0.2)
 
 **Fixed bugs:**
