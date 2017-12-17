@@ -24,8 +24,8 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "prooph/common" : "^4.1",
-        "prooph/service-bus" : "^6.3",
+        "prooph/common" : "^4.2.1",
+        "prooph/service-bus" : "^6.2",
         "prooph/event-store" : "^7.3.1"
     },
     "require-dev": {
