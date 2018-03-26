@@ -32,7 +32,7 @@ final class TransactionManagerFactory
      * <code>
      * <?php
      * return [
-     *     TransactionManager::class => [TransactionManagerFactory::class, 'command_bus_service_name'],
+     *     TransactionManager::class => [TransactionManagerFactory::class, 'event_store_service_name'],
      * ];
      * </code>
      *
