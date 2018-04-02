@@ -14,6 +14,7 @@ namespace Prooph\EventStoreBusBridge;
 
 use Prooph\Common\Event\ActionEvent;
 use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Plugin\AbstractPlugin;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\ServiceBus\EventBus;
@@ -42,7 +43,7 @@ final class EventPublisher extends AbstractPlugin
             function (ActionEvent $event) use ($eventStore): void {
                 $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
 
-                if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
+                if (!$this->inTransaction($eventStore)) {
                     if ($event->getParam('streamNotFound', false)
                         || $event->getParam('concurrencyException', false)
                     ) {
@@ -64,7 +65,7 @@ final class EventPublisher extends AbstractPlugin
                 $stream = $event->getParam('stream');
                 $recordedEvents = $stream->streamEvents();
 
-                if (! $eventStore instanceof TransactionalActionEventEmitterEventStore) {
+                if (!$this->inTransaction($eventStore)) {
                     if ($event->getParam('streamExistsAlready', false)) {
                         return;
                     }
@@ -98,5 +99,11 @@ final class EventPublisher extends AbstractPlugin
                 }
             );
         }
+    }
+
+    private function inTransaction(EventStore $eventStore): bool
+    {
+        return $eventStore instanceof TransactionalActionEventEmitterEventStore
+            && $eventStore->inTransaction();
     }
 }

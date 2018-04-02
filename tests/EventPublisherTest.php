@@ -26,6 +26,7 @@ use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\ServiceBus\EventBus;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class EventPublisherTest extends TestCase
 {
@@ -42,12 +43,31 @@ class EventPublisherTest extends TestCase
     /**
      * @test
      */
+    public function it_publishes_all_created_and_appended_events_if_not_inside_transaction(): void
+    {
+        [$event1, $event2, $event3, $event4] = $this->setupStubEvents();
+
+        $eventBus = $this->prophesize(EventBus::class);
+
+        $eventPublisher = new EventPublisher($eventBus->reveal());
+
+        $eventPublisher->attachToEventStore($this->eventStore);
+
+        $eventBus->dispatch($event1)->shouldBeCalled();
+        $eventBus->dispatch($event2)->shouldBeCalled();
+        $eventBus->dispatch($event3)->shouldBeCalled();
+        $eventBus->dispatch($event4)->shouldBeCalled();
+
+        $this->eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])));
+        $this->eventStore->appendTo(new StreamName('test'), new \ArrayIterator([$event3, $event4]));
+    }
+
+    /**
+     * @test
+     */
     public function it_publishes_all_created_and_appended_events(): void
     {
-        $event1 = $this->prophesize(Message::class)->reveal();
-        $event2 = $this->prophesize(Message::class)->reveal();
-        $event3 = $this->prophesize(Message::class)->reveal();
-        $event4 = $this->prophesize(Message::class)->reveal();
+        [$event1, $event2, $event3, $event4] = $this->setupStubEvents();
 
         $eventBus = $this->prophesize(EventBus::class);
 
@@ -71,10 +91,7 @@ class EventPublisherTest extends TestCase
      */
     public function it_publishes_correctly_when_event_store_implements_can_control_transaction(): void
     {
-        $event1 = $this->prophesize(Message::class)->reveal();
-        $event2 = $this->prophesize(Message::class)->reveal();
-        $event3 = $this->prophesize(Message::class)->reveal();
-        $event4 = $this->prophesize(Message::class)->reveal();
+        [$event1, $event2, $event3, $event4] = $this->setupStubEvents();
 
         $eventBus = $this->prophesize(EventBus::class);
 
@@ -98,10 +115,7 @@ class EventPublisherTest extends TestCase
      */
     public function it_does_not_publish_when_event_store_rolls_back(): void
     {
-        $event1 = $this->prophesize(Message::class)->reveal();
-        $event2 = $this->prophesize(Message::class)->reveal();
-        $event3 = $this->prophesize(Message::class)->reveal();
-        $event4 = $this->prophesize(Message::class)->reveal();
+        [$event1, $event2, $event3, $event4] = $this->setupStubEvents();
 
         $eventBus = $this->prophesize(EventBus::class);
 
@@ -125,10 +139,7 @@ class EventPublisherTest extends TestCase
      */
     public function it_does_not_publish_when_non_transactional_event_store_throws_exception(): void
     {
-        $event1 = $this->prophesize(Message::class)->reveal();
-        $event2 = $this->prophesize(Message::class)->reveal();
-        $event3 = $this->prophesize(Message::class)->reveal();
-        $event4 = $this->prophesize(Message::class)->reveal();
+        [$event1, $event2, $event3, $event4] = $this->setupStubEvents();
 
         $eventStore = $this->prophesize(EventStore::class);
         $eventStore->create(new Stream(new StreamName('test'), new \ArrayIterator([$event1, $event2])))->willThrow(StreamExistsAlready::with(new StreamName('test')))->shouldBeCalled();
@@ -165,5 +176,18 @@ class EventPublisherTest extends TestCase
         } catch (\Throwable $e) {
             // ignore
         }
+    }
+
+    /**
+     * @return Message[]
+     */
+    private function setupStubEvents(): array
+    {
+        $event1 = $this->prophesize(Message::class)->reveal();
+        $event2 = $this->prophesize(Message::class)->reveal();
+        $event3 = $this->prophesize(Message::class)->reveal();
+        $event4 = $this->prophesize(Message::class)->reveal();
+
+        return [$event1, $event2, $event3, $event4];
     }
 }
