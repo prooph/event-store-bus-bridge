@@ -43,7 +43,7 @@ final class EventPublisher extends AbstractPlugin
             function (ActionEvent $event) use ($eventStore): void {
                 $recordedEvents = $event->getParam('streamEvents', new \ArrayIterator());
 
-                if (!$this->inTransaction($eventStore)) {
+                if (! $this->inTransaction($eventStore)) {
                     if ($event->getParam('streamNotFound', false)
                         || $event->getParam('concurrencyException', false)
                     ) {
@@ -65,7 +65,7 @@ final class EventPublisher extends AbstractPlugin
                 $stream = $event->getParam('stream');
                 $recordedEvents = $stream->streamEvents();
 
-                if (!$this->inTransaction($eventStore)) {
+                if (! $this->inTransaction($eventStore)) {
                     if ($event->getParam('streamExistsAlready', false)) {
                         return;
                     }
