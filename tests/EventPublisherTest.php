@@ -26,7 +26,6 @@ use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\ServiceBus\EventBus;
-use Prophecy\Prophecy\ObjectProphecy;
 
 class EventPublisherTest extends TestCase
 {
