@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ProophTest\EventStoreBusBridge;
 
+use Assert\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
@@ -437,6 +438,77 @@ class CausationMetadataEnricherTest extends TestCase
         $this->assertInstanceOf(Message::class, $result);
         $this->assertArrayNotHasKey('_causation_id', $result->metadata());
         $this->assertArrayNotHasKey('_causation_', $result->metadata());
+    }
+
+    /**
+     * @test
+     */
+    public function it_has_configurable_metadata_keys(): void
+    {
+        $eventStore = $this->getEventStore();
+
+        $idKey = '$causationId';
+        $nameKey = '$causationName';
+        $causationMetadataEnricher = new CausationMetadataEnricher($idKey, $nameKey);
+        $causationMetadataEnricher->attachToEventStore($eventStore);
+
+        $commandBus = new CommandBus();
+        $router = new CommandRouter();
+        $router->route(DoSomething::class)->to(function (DoSomething $command) use ($eventStore): void {
+            /* @var EventStore $eventStore */
+            $eventStore->create(
+                new Stream(
+                    new StreamName('something'),
+                    new \ArrayIterator([
+                        new SomethingDone(['name' => $command->payload('name')]),
+                    ])
+                )
+            );
+        });
+
+        $result = null;
+
+        $eventStore->attach(
+            ActionEventEmitterEventStore::EVENT_CREATE,
+            function (ActionEvent $event) use (&$result): void {
+                $stream = $event->getParam('stream');
+                $stream->streamEvents()->rewind();
+                $result = $stream->streamEvents()->current();
+            },
+            -1000
+        );
+
+        $router->attachToMessageBus($commandBus);
+        $causationMetadataEnricher->attachToMessageBus($commandBus);
+
+        $command = new DoSomething(['name' => 'Alex'], 1);
+        $commandBus->dispatch($command);
+
+        $this->assertArrayHasKey($idKey, $result->metadata());
+        $this->assertArrayHasKey($nameKey, $result->metadata());
+
+        $this->assertEquals($command->uuid()->toString(), $result->metadata()[$idKey]);
+        $this->assertEquals(get_class($command), $result->metadata()[$nameKey]);
+    }
+
+    /**
+     * @test
+     */
+    public function causation_id_key_cannot_be_empty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new CausationMetadataEnricher('');
+    }
+
+    /**
+     * @test
+     */
+    public function causation_name_key_cannot_be_empty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new CausationMetadataEnricher('$causationId', '');
     }
 
     private function getEventStore(): ActionEventEmitterEventStore
