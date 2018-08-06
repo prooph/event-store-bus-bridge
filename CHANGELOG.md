@@ -1,7 +1,26 @@
 # Change Log
 
-## [v3.1.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.1.0)
+## [v3.3.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.3.0)
 
+[Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.2.0...v3.3.0)
+
+**Implemented enhancements:**
+
+- Support for configurable causation metadata key [\#39](https://github.com/prooph/event-store-bus-bridge/issues/39)
+- Made causation metadata keys configurable [\#40](https://github.com/prooph/event-store-bus-bridge/pull/40) ([pkruithof](https://github.com/pkruithof))
+
+## [v3.2.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.2.0) (2018-04-04)
+[Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.1.0...v3.2.0)
+
+**Implemented enhancements:**
+
+- Dispatch EVENT\_APPEND\_TO and EVENT\_CREATE in transactional event store when not inside transaction [\#38](https://github.com/prooph/event-store-bus-bridge/pull/38) ([destebang](https://github.com/destebang))
+
+**Merged pull requests:**
+
+- doc block [\#37](https://github.com/prooph/event-store-bus-bridge/pull/37) ([basz](https://github.com/basz))
+
+## [v3.1.0](https://github.com/prooph/event-store-bus-bridge/tree/v3.1.0) (2017-12-17)
 [Full Changelog](https://github.com/prooph/event-store-bus-bridge/compare/v3.0.2...v3.1.0)
 
 **Implemented enhancements:**
