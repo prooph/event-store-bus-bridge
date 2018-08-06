@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Prooph\EventStoreBusBridge;
 
 use ArrayIterator;
+use Assert\Assertion;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Messaging\Message;
 use Prooph\EventStore\ActionEventEmitterEventStore;
@@ -25,6 +26,16 @@ use Prooph\ServiceBus\Plugin\Plugin as MessageBusPlugin;
 
 final class CausationMetadataEnricher implements MetadataEnricher, EventStorePlugin, MessageBusPlugin
 {
+    /**
+     * @var string
+     */
+    private $causationIdKey;
+
+    /**
+     * @var string
+     */
+    private $causationNameKey;
+
     /**
      * @var Message
      */
@@ -39,6 +50,19 @@ final class CausationMetadataEnricher implements MetadataEnricher, EventStorePlu
      * @var array
      */
     private $messageBusListeners = [];
+
+    /**
+     * @param string $causationIdKey
+     * @param string $causationNameKey
+     */
+    public function __construct(string $causationIdKey = '_causation_id', string $causationNameKey = '_causation_name')
+    {
+        Assertion::notEmpty($causationIdKey);
+        Assertion::notEmpty($causationNameKey);
+
+        $this->causationIdKey = $causationIdKey;
+        $this->causationNameKey = $causationNameKey;
+    }
 
     public function attachToEventStore(ActionEventEmitterEventStore $eventStore): void
     {
@@ -129,8 +153,8 @@ final class CausationMetadataEnricher implements MetadataEnricher, EventStorePlu
 
     public function enrich(Message $message): Message
     {
-        $message = $message->withAddedMetadata('_causation_id', $this->currentCommand->uuid()->toString());
-        $message = $message->withAddedMetadata('_causation_name', $this->currentCommand->messageName());
+        $message = $message->withAddedMetadata($this->causationIdKey, $this->currentCommand->uuid()->toString());
+        $message = $message->withAddedMetadata($this->causationNameKey, $this->currentCommand->messageName());
 
         return $message;
     }
