@@ -78,7 +78,7 @@ class CausationMetadataEnricherTest extends TestCase
         $this->assertArrayHasKey('_causation_name', $result->metadata());
 
         $this->assertEquals($command->uuid()->toString(), $result->metadata()['_causation_id']);
-        $this->assertEquals(get_class($command), $result->metadata()['_causation_name']);
+        $this->assertEquals(\get_class($command), $result->metadata()['_causation_name']);
     }
 
     /**
@@ -134,7 +134,7 @@ class CausationMetadataEnricherTest extends TestCase
         $this->assertArrayHasKey('_causation_name', $result->metadata());
 
         $this->assertEquals($command->uuid()->toString(), $result->metadata()['_causation_id']);
-        $this->assertEquals(get_class($command), $result->metadata()['_causation_name']);
+        $this->assertEquals(\get_class($command), $result->metadata()['_causation_name']);
     }
 
     /**
@@ -488,7 +488,7 @@ class CausationMetadataEnricherTest extends TestCase
         $this->assertArrayHasKey($nameKey, $result->metadata());
 
         $this->assertEquals($command->uuid()->toString(), $result->metadata()[$idKey]);
-        $this->assertEquals(get_class($command), $result->metadata()[$nameKey]);
+        $this->assertEquals(\get_class($command), $result->metadata()[$nameKey]);
     }
 
     /**
