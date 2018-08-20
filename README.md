@@ -8,6 +8,12 @@ Marry CQRS with Event Sourcing
 
 This package acts as a glue component between [prooph/service-bus](https://github.com/prooph/service-bus) and [prooph/event-store](https://github.com/prooph/event-store).
 
+## Important
+
+This library will receive support until December 31, 2019 and will then be deprecated.
+
+For further information see the official announcement here: [https://www.sasaprolic.com/2018/08/the-future-of-prooph-components.html](https://www.sasaprolic.com/2018/08/the-future-of-prooph-components.html)
+
 ## Features
 
 - [Transaction handling](docs/transaction_manager.md) based on command dispatch
