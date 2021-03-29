@@ -19,9 +19,12 @@ use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
 use Prooph\ServiceBus\Exception\MessageDispatchException;
 use Prooph\ServiceBus\Plugin\Router\CommandRouter;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class TransactionManagerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

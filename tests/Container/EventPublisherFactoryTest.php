@@ -18,10 +18,13 @@ use Prooph\EventStoreBusBridge\Container\EventPublisherFactory;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\ServiceBus\EventBus;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 class EventPublisherFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

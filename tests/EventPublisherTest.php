@@ -27,9 +27,12 @@ use Prooph\EventStore\StreamName;
 use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
 use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\ServiceBus\EventBus;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class EventPublisherTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @var ActionEventEmitterEventStore
      */

@@ -19,10 +19,13 @@ use Prooph\EventStore\TransactionalEventStore;
 use Prooph\EventStoreBusBridge\Container\TransactionManagerFactory;
 use Prooph\EventStoreBusBridge\Exception\InvalidArgumentException;
 use Prooph\EventStoreBusBridge\TransactionManager;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 class TransactionManagerFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */
