@@ -24,7 +24,7 @@
     "require": {
         "php": "^7.3 | ^8.0",
         "prooph/common" : "^4.2.1",
-        "prooph/service-bus" : "^6.2",
+        "prooph/service-bus" : "^6.3",
         "prooph/event-store" : "^7.3.1"
     },
     "require-dev": {
